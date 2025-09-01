@@ -11,9 +11,33 @@ A Chrome extension that helps you manage tabs better by saving them to Read Late
 - **Manage lists** - View and edit your saved tabs anytime
 - **Stay focused** - Keep only essential tabs open without losing important links
 
+## Keyboard Shortcuts
+
+### Default Shortcuts (Pre-configured)
+
+| Shortcut      | Action                                             |
+| ------------- | -------------------------------------------------- |
+| `Alt+R`       | Save current tab to Read Later list (and close it) |
+| `Alt+T`       | Save current tab to Tasks list (and close it)      |
+| `Alt+Shift+R` | Save to Read Later with a custom note              |
+| `Alt+Shift+T` | Save to Tasks with a custom note                   |
+
+### Additional Commands (Configure Manually)
+
+These commands are available but need manual configuration in Chrome:
+
+1. Go to `chrome://extensions/shortcuts`
+2. Find "Loops" and set shortcuts for:
+   - **Open extension popup** - Quick access to your lists
+   - **Close current tab** - Simple tab closing (e.g., `Alt+W`)
+
+**Note:** If `Alt+Shift+T` doesn't work, it may conflict with another extension or Chrome shortcut. You can reassign it in `chrome://extensions/shortcuts`.
+
 ## Getting Started
 
-### Installation (Development)
+### Installation
+
+#### From Source (Development)
 
 1. Clone this repository
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -22,9 +46,11 @@ A Chrome extension that helps you manage tabs better by saving them to Read Late
 
 ### Usage
 
-- Use keyboard shortcuts to save tabs (configurable in extension settings)
-- Access your lists through the extension popup
-- Edit and organize saved tabs as needed
+1. **Save tabs quickly**: Use `Alt+R` or `Alt+T` to save and close tabs
+2. **Add context**: Use `Alt+Shift+R` or `Alt+Shift+T` to add notes
+3. **View saved tabs**: Click the Loops icon in your toolbar
+4. **Reopen tabs**: Click any saved item to open it in a new tab
+5. **Manage items**: Hover over items to delete, or use "Clear All"
 
 ## Development
 
