@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Loops - Close tabs, keep context",
+  "version": "0.0.1",
+  "description": "Manage tabs better by saving them to Read Later or Task lists",
+  "permissions": ["tabs", "storage", "activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "close-tab": {
+      "suggested_key": {
+        "default": "Alt+W"
+      },
+      "description": "Close current tab"
+    },
+    "save-read-later": {
+      "suggested_key": {
+        "default": "Alt+R"
+      },
+      "description": "Save tab to Read Later"
+    },
+    "save-task": {
+      "suggested_key": {
+        "default": "Alt+T"
+      },
+      "description": "Save tab to Tasks"
+    }
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
