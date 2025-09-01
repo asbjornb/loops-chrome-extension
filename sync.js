@@ -94,22 +94,14 @@ async function pullFromSync() {
     });
 
     // Don't merge if sync data is empty
-    if (!syncData.lastSyncedAt) {
-      console.log('No sync data found in chrome.storage.sync');
+    if (!syncData.lastSyncedAt || (!syncData.readLater?.length && !syncData.tasks?.length)) {
+      console.log('No sync data found in chrome.storage.sync or data is empty');
       return { success: true, merged: false };
     }
 
-    const currentDeviceId = await getDeviceId();
-    console.log('Device ID comparison:', {
-      current: currentDeviceId.slice(-9),
-      sync: syncData.deviceId?.slice(-9),
-      areEqual: syncData.deviceId === currentDeviceId,
-    });
-
-    if (syncData.deviceId === currentDeviceId) {
-      console.log('Sync data is from current device, skipping merge');
-      return { success: true, merged: false };
-    }
+    // Always attempt to merge data from sync storage
+    // Chrome sync should handle conflicts naturally across devices
+    console.log('Found sync data to merge - proceeding with merge operation');
 
     // Merge the data
     const merged = mergeData(localData, syncData);
@@ -147,9 +139,48 @@ async function getDeviceId() {
   return deviceId;
 }
 
+// Check if Chrome sync is properly configured
+async function checkChromeSync() {
+  console.log('=== Chrome Sync Configuration Check ===');
+
+  try {
+    // Test if we can write to sync storage
+    const testKey = 'loops_sync_test';
+    const testValue = { timestamp: Date.now() };
+
+    await chrome.storage.sync.set({ [testKey]: testValue });
+    const result = await chrome.storage.sync.get(testKey);
+
+    if (result[testKey]?.timestamp === testValue.timestamp) {
+      console.log('✅ Chrome sync storage is working');
+      await chrome.storage.sync.remove(testKey);
+    } else {
+      console.error('❌ Chrome sync storage test failed');
+      return false;
+    }
+
+    console.log('📋 To use Chrome sync, ensure:');
+    console.log('   1. You are signed into Chrome with a Google account');
+    console.log('   2. Chrome sync is enabled (chrome://settings/syncSetup)');
+    console.log('   3. Extensions sync is enabled in sync settings');
+    console.log('   4. Same Google account on all devices');
+
+    return true;
+  } catch (error) {
+    console.error('❌ Chrome sync not available:', error.message);
+    return false;
+  }
+}
+
 // Debug function to inspect sync storage
 async function debugSyncStorage() {
   console.log('=== Chrome Sync Storage Debug ===');
+
+  // First check if sync is working
+  const syncWorking = await checkChromeSync();
+  if (!syncWorking) {
+    return;
+  }
 
   try {
     const [localData, syncData] = await Promise.all([
@@ -179,6 +210,14 @@ async function debugSyncStorage() {
       maxBytes: 102400, // 100KB
       percentUsed: Math.round((bytesInUse / 102400) * 100),
     });
+
+    // Provide troubleshooting info
+    if (syncData.readLater?.length === 0 && syncData.tasks?.length === 0) {
+      console.log('⚠️ No items in sync storage. This could mean:');
+      console.log('   - Extension sync is not enabled');
+      console.log('   - Different Google account on devices');
+      console.log("   - Sync data hasn't propagated yet (can take a few minutes)");
+    }
   } catch (error) {
     console.error('Debug failed:', error);
   }
@@ -264,6 +303,7 @@ const loopsSync = {
   startAutoSync,
   stopAutoSync,
   debugSyncStorage,
+  checkChromeSync,
   getConfig: () => SYNC_CONFIG,
   setEnabled: (enabled) => {
     SYNC_CONFIG.enabled = enabled;
