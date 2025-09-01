@@ -136,6 +136,11 @@ document.getElementById('viewAllBtn').addEventListener('click', () => {
   chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
 });
 
+// Manage Tabs button - opens tab manager
+document.getElementById('manageTabsBtn').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('tab-manager.html') });
+});
+
 // Clear button handler
 document.addEventListener('DOMContentLoaded', () => {
   const clearBtn = document.getElementById('clearBtn');
