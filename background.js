@@ -33,11 +33,12 @@ async function saveTabToList(listName, note = '') {
   list.unshift(tabData); // Add to beginning of list
   await saveToStorage(listName, list);
 
-  // Show notification
+  // Show save success notification briefly
   chrome.action.setBadgeText({ text: '✓' });
   chrome.action.setBadgeBackgroundColor({ color: '#10b981' });
   setTimeout(() => {
-    chrome.action.setBadgeText({ text: '' });
+    // Restore the count badge
+    updateBadge();
   }, 1500);
 
   // Close the tab after saving
@@ -95,6 +96,33 @@ chrome.commands.onCommand.addListener(async (command) => {
 chrome.runtime.onMessage.addListener((request, _sender, _sendResponse) => {
   if (request.action === 'saveWithNote') {
     saveTabToList(request.listName, request.note);
+  }
+});
+
+// Update badge with total count of saved items
+async function updateBadge() {
+  const storage = await chrome.storage.local.get(['readLater', 'tasks']);
+  const readLaterCount = (storage.readLater || []).length;
+  const tasksCount = (storage.tasks || []).length;
+  const totalCount = readLaterCount + tasksCount;
+
+  if (totalCount > 0) {
+    chrome.action.setBadgeText({
+      text: totalCount > 99 ? '99+' : totalCount.toString(),
+    });
+    chrome.action.setBadgeBackgroundColor({ color: '#7C3AED' });
+  } else {
+    chrome.action.setBadgeText({ text: '' });
+  }
+}
+
+// Update badge when extension starts
+updateBadge();
+
+// Update badge when storage changes
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && (changes.readLater || changes.tasks)) {
+    updateBadge();
   }
 });
 
