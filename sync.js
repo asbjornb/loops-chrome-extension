@@ -43,10 +43,15 @@ async function pushToSync() {
   try {
     const localData = await chrome.storage.local.get(['readLater', 'tasks']);
 
+    // Get settings for syncing (including GitHub tokens for better UX)
+    const settingsData = await chrome.storage.local.get(['loopsSettings']);
+    const settings = settingsData.loopsSettings || {};
+
     // Take only the most recent items that fit in sync storage
     const syncData = {
       readLater: (localData.readLater || []).slice(0, SYNC_CONFIG.maxItemsPerList),
       tasks: (localData.tasks || []).slice(0, SYNC_CONFIG.maxItemsPerList),
+      settings: settings, // Sync all settings including GitHub tokens for UX
       lastSyncedAt: new Date().toISOString(),
       deviceId: await getDeviceId(),
       extensionId: chrome.runtime.id, // Help with debugging
@@ -136,7 +141,13 @@ async function pullFromSync() {
     // Merge the data
     const merged = mergeData(localData, syncData);
 
-    // Save merged data to local storage
+    // Also merge settings if they exist in sync data
+    if (syncData.settings) {
+      console.log('Merging synced settings (including GitHub token if present)');
+      merged.loopsSettings = { ...syncData.settings };
+    }
+
+    // Save merged data and settings to local storage
     await chrome.storage.local.set(merged);
 
     console.log('Data merged from cloud:', {
