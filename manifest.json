@@ -8,12 +8,6 @@
     "service_worker": "background.js"
   },
   "commands": {
-    "close-tab": {
-      "suggested_key": {
-        "default": "Alt+W"
-      },
-      "description": "Close current tab"
-    },
     "save-read-later": {
       "suggested_key": {
         "default": "Alt+R"

@@ -73,14 +73,6 @@ async function showNoteDialog(listName) {
 // Handle keyboard shortcuts
 chrome.commands.onCommand.addListener(async (command) => {
   switch (command) {
-    case 'close-tab':
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.remove(tabs[0].id);
-        }
-      });
-      break;
-
     case 'save-read-later':
       await saveTabToList('readLater');
       break;
