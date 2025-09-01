@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run formatting check
+      run: npm run format -- --check
+    
+    - name: Validate extension structure
+      run: |
+        # Check required files exist
+        test -f manifest.json || (echo "manifest.json missing" && exit 1)
+        test -f background.js || (echo "background.js missing" && exit 1)
+        test -f popup.html || (echo "popup.html missing" && exit 1)
+        test -f popup.js || (echo "popup.js missing" && exit 1)
+        test -f dashboard.html || (echo "dashboard.html missing" && exit 1)
+        test -f dashboard.js || (echo "dashboard.js missing" && exit 1)
+        
+        # Validate manifest.json
+        node -e "
+          const manifest = require('./manifest.json');
+          if (manifest.manifest_version !== 3) throw new Error('Must use manifest v3');
+          if (!manifest.permissions.includes('tabs')) throw new Error('Missing tabs permission');
+          if (!manifest.permissions.includes('storage')) throw new Error('Missing storage permission');
+          console.log('✅ Extension structure valid');
+        "
+    
+    - name: Check for common Chrome extension issues
+      run: |
+        # Check for inline scripts (not allowed in manifest v3)
+        if grep -r "javascript:" --include="*.html" .; then
+          echo "❌ Found inline JavaScript (not allowed in manifest v3)"
+          exit 1
+        fi
+        
+        # Check for eval usage (restricted in extensions)
+        if grep -r "eval(" --include="*.js" .; then
+          echo "❌ Found eval() usage (restricted in extensions)"
+          exit 1
+        fi
+        
+        echo "✅ No common Chrome extension issues found"
+    
+    - name: Generate build summary
+      run: |
+        echo "## 📊 Extension Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Name:** $(node -e "console.log(require('./manifest.json').name)")" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version:** $(node -e "console.log(require('./manifest.json').version)")" >> $GITHUB_STEP_SUMMARY
+        echo "- **Manifest Version:** $(node -e "console.log(require('./manifest.json').manifest_version)")" >> $GITHUB_STEP_SUMMARY
+        echo "- **Permissions:** $(node -e "console.log(require('./manifest.json').permissions.join(', '))")" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commands:** $(node -e "console.log(Object.keys(require('./manifest.json').commands || {}).length)")" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📁 Files" >> $GITHUB_STEP_SUMMARY
+        echo "- HTML files: $(find . -name '*.html' | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- JS files: $(find . -name '*.js' | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- Total size: $(du -sh . | cut -f1)" >> $GITHUB_STEP_SUMMARY

@@ -1,5 +1,7 @@
 # Loops — Chrome Extension
 
+[![CI](https://github.com/asbjornb/loops-chrome-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/asbjornb/loops-chrome-extension/actions/workflows/ci.yml)
+
 > Close tabs, keep context.
 
 A Chrome extension that helps you manage tabs better by saving them to Read Later or Task lists, keeping your browser clean while maintaining context of what matters.
