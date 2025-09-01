@@ -71,6 +71,12 @@ async function analyzeTabs() {
       ...analysis,
     };
 
+    // Also update the original tab in allTabs with the isDuplicate flag
+    const originalTabIndex = allTabs.findIndex((t) => t.id === tab.id);
+    if (originalTabIndex !== -1) {
+      allTabs[originalTabIndex] = tabData;
+    }
+
     const group = groups.get(domain);
     group.tabs.push(tabData);
 
