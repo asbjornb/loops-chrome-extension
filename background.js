@@ -99,31 +99,40 @@ chrome.runtime.onMessage.addListener((request, _sender, _sendResponse) => {
   }
 });
 
-// Update badge with total count of saved items
+// Update badge with current open tab count
 async function updateBadge() {
-  const storage = await chrome.storage.local.get(['readLater', 'tasks']);
-  const readLaterCount = (storage.readLater || []).length;
-  const tasksCount = (storage.tasks || []).length;
-  const totalCount = readLaterCount + tasksCount;
+  try {
+    const tabs = await chrome.tabs.query({});
+    const tabCount = tabs.length;
 
-  if (totalCount > 0) {
-    chrome.action.setBadgeText({
-      text: totalCount > 99 ? '99+' : totalCount.toString(),
-    });
-    chrome.action.setBadgeBackgroundColor({ color: '#7C3AED' });
-  } else {
-    chrome.action.setBadgeText({ text: '' });
+    if (tabCount > 1) {
+      // Don't show badge for just 1 tab
+      chrome.action.setBadgeText({
+        text: tabCount > 99 ? '99+' : tabCount.toString(),
+      });
+
+      // Color coding based on tab count
+      if (tabCount < 10) {
+        chrome.action.setBadgeBackgroundColor({ color: '#10b981' }); // Green - good
+      } else if (tabCount < 20) {
+        chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' }); // Amber - warning
+      } else {
+        chrome.action.setBadgeBackgroundColor({ color: '#ef4444' }); // Red - too many!
+      }
+    } else {
+      chrome.action.setBadgeText({ text: '' });
+    }
+  } catch (error) {
+    console.error('Failed to update badge:', error);
   }
 }
 
 // Update badge when extension starts
 updateBadge();
 
-// Update badge when storage changes
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'local' && (changes.readLater || changes.tasks)) {
-    updateBadge();
-  }
-});
+// Update badge when tabs change
+chrome.tabs.onCreated.addListener(updateBadge);
+chrome.tabs.onRemoved.addListener(updateBadge);
+chrome.tabs.onUpdated.addListener(updateBadge);
 
 console.warn('Loops extension loaded - Save with notes enabled');
