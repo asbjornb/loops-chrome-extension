@@ -7,6 +7,10 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
+    "test": "npm run test:conflicts && npm run test:sw",
+    "test:sw": "node test-service-worker.js",
+    "test:conflicts": "node test-variable-conflicts.js",
+    "precommit": "npm run test && npm run lint",
     "prepare": "husky install"
   },
   "devDependencies": {
