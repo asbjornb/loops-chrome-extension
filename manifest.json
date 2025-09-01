@@ -34,9 +34,6 @@
     },
     "_execute_action": {
       "description": "Open extension popup (set your own shortcut)"
-    },
-    "close-tab": {
-      "description": "Close current tab (set your own shortcut, e.g. Alt+W)"
     }
   },
   "action": {

@@ -88,14 +88,6 @@ chrome.commands.onCommand.addListener(async (command) => {
     case 'save-task-note':
       await showNoteDialog('tasks');
       break;
-
-    case 'close-tab':
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.remove(tabs[0].id);
-        }
-      });
-      break;
   }
 });
 

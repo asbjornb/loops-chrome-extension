@@ -24,14 +24,15 @@ A Chrome extension that helps you manage tabs better by saving them to Read Late
 
 ### Additional Commands (Configure Manually)
 
-These commands are available but need manual configuration in Chrome:
+The extension popup can be opened with a custom shortcut:
 
 1. Go to `chrome://extensions/shortcuts`
-2. Find "Loops" and set shortcuts for:
-   - **Open extension popup** - Quick access to your lists
-   - **Close current tab** - Simple tab closing (e.g., `Alt+W`)
+2. Find "Loops" and set a shortcut for **"Activate the extension"** (e.g., `Alt+E`)
 
-**Note:** If `Alt+Shift+T` doesn't work, it may conflict with another extension or Chrome shortcut. You can reassign it in `chrome://extensions/shortcuts`.
+**Notes:**
+
+- If `Alt+Shift+T` doesn't work, it may conflict with another extension. You can reassign it in `chrome://extensions/shortcuts`
+- To close tabs, just use Chrome's built-in `Ctrl+W` shortcut
 
 ## Getting Started
 
