@@ -318,8 +318,8 @@ Loops helps you manage browser tabs by saving them to organized lists instead of
 }
 
 // Export for use in other scripts
-const isServiceWorker = typeof window === 'undefined';
-const globalContext = isServiceWorker ? self : window;
-globalContext.GitHubSync = GitHubSync;
+const isGitHubServiceWorker = typeof window === 'undefined';
+const gitHubGlobalContext = isGitHubServiceWorker ? self : window;
+gitHubGlobalContext.GitHubSync = GitHubSync;
 
 console.log('GitHub sync module loaded');
