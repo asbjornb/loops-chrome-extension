@@ -26,10 +26,12 @@ async function loadTabs() {
 // Analyze tabs for grouping and suggestions
 async function analyzeTabs() {
   const groups = new Map();
-  const urlSeen = new Set();
   let duplicateCount = 0;
   let suggestedReads = 0;
   let inactiveCount = 0;
+
+  // Track first occurrence of each URL
+  const seenUrls = new Set();
 
   // Group tabs by domain
   for (const tab of allTabs) {
@@ -45,12 +47,12 @@ async function analyzeTabs() {
       });
     }
 
-    // Check for duplicates
-    const isDuplicate = urlSeen.has(tab.url);
+    // Check for duplicates - mark as duplicate if we've seen this URL before
+    const isDuplicate = seenUrls.has(tab.url);
     if (isDuplicate) {
       duplicateCount++;
     }
-    urlSeen.add(tab.url);
+    seenUrls.add(tab.url);
 
     // Analyze tab for suggestions
     const analysis = analyzeTab(tab);
@@ -215,8 +217,8 @@ function renderTabGroups() {
           ${group.duplicates > 0 ? `<span class="group-suggestion">🔄 ${group.duplicates} duplicates</span>` : ''}
         </div>
         <div class="group-actions">
-          ${group.suggestion ? `<button class="btn btn-sm btn-${group.suggestion === 'read-later' ? 'success' : 'primary'}" onclick="saveGroupToList('${group.domain}', '${group.suggestion === 'read-later' ? 'readLater' : 'tasks'}')">Save All</button>` : ''}
-          ${group.duplicates > 0 ? `<button class="btn btn-sm btn-warning" onclick="closeDuplicatesInGroup('${group.domain}')">Close Duplicates</button>` : ''}
+          ${group.suggestion ? `<button class="btn btn-sm btn-${group.suggestion === 'read-later' ? 'success' : 'primary'}" data-action="save-group" data-domain="${group.domain}" data-list="${group.suggestion === 'read-later' ? 'readLater' : 'tasks'}">Save All</button>` : ''}
+          ${group.duplicates > 0 ? `<button class="btn btn-sm btn-warning" data-action="close-duplicates" data-domain="${group.domain}">Close Duplicates</button>` : ''}
         </div>
       </div>
       <div class="tab-list">
@@ -240,7 +242,7 @@ function renderTabItem(tab, group) {
     <div class="tab-item" data-tab-id="${tab.id}">
       <input type="checkbox" class="tab-checkbox" data-tab-id="${tab.id}">
       ${tab.favIconUrl ? `<img src="${tab.favIconUrl}" class="tab-favicon">` : ''}
-      <div class="tab-content" onclick="switchToTab(${tab.id})">
+      <div class="tab-content" data-action="switch-to-tab" data-tab-id="${tab.id}">
         <div class="tab-title">${titleWithHighlight}</div>
         <div class="tab-url">${tab.url}</div>
       </div>
@@ -331,6 +333,37 @@ function addEventListeners() {
       updateBulkActions();
     });
   });
+
+  // Event delegation for group action buttons and tab content
+  tabGroupsContainer.addEventListener('click', async (e) => {
+    const action = e.target.dataset.action;
+    if (!action) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    switch (action) {
+      case 'save-group':
+        const saveDomain = e.target.dataset.domain;
+        const saveList = e.target.dataset.list;
+        await saveGroupToList(saveDomain, saveList);
+        break;
+
+      case 'close-duplicates':
+        const closeDomain = e.target.dataset.domain;
+        await closeDuplicatesInGroup(closeDomain);
+        break;
+
+      case 'switch-to-tab':
+        const tabId = parseInt(e.target.dataset.tabId);
+        await switchToTab(tabId);
+        break;
+
+      case 'retry':
+        loadTabs();
+        break;
+    }
+  });
 }
 
 // Update group checkbox states based on their tabs
@@ -382,7 +415,9 @@ async function switchToTab(tabId) {
     const tab = await chrome.tabs.get(tabId);
     await chrome.windows.update(tab.windowId, { focused: true });
   } catch (error) {
-    console.error('Failed to switch to tab:', error);
+    console.warn('Failed to switch to tab (may have been closed):', error);
+    // Refresh the tab list since the tab may no longer exist
+    loadTabs();
   }
 }
 
@@ -397,7 +432,11 @@ async function saveGroupToList(domain, listName) {
 
   // Close the tabs after saving
   const tabIds = group.tabs.map((t) => t.id);
-  await chrome.tabs.remove(tabIds);
+  try {
+    await chrome.tabs.remove(tabIds);
+  } catch (error) {
+    console.warn('Some tabs could not be closed (may already be closed):', error);
+  }
 
   // Clear selections and refresh the page
   selectedTabs.clear();
@@ -413,7 +452,11 @@ async function closeDuplicatesInGroup(domain) {
   const tabIds = duplicateTabs.map((t) => t.id);
 
   if (tabIds.length > 0) {
-    await chrome.tabs.remove(tabIds);
+    try {
+      await chrome.tabs.remove(tabIds);
+    } catch (error) {
+      console.warn('Some tabs could not be closed (may already be closed):', error);
+    }
     selectedTabs.clear();
     loadTabs();
   }
@@ -465,7 +508,11 @@ document.getElementById('closeInactive').addEventListener('click', async () => {
 
   if (inactiveTabs.length > 0 && confirm(`Close ${inactiveTabs.length} inactive tabs?`)) {
     const tabIds = inactiveTabs.map((t) => t.id);
-    await chrome.tabs.remove(tabIds);
+    try {
+      await chrome.tabs.remove(tabIds);
+    } catch (error) {
+      console.warn('Some tabs could not be closed (may already be closed):', error);
+    }
     selectedTabs.clear();
     loadTabs();
   }
@@ -476,9 +523,15 @@ document.getElementById('closeDuplicates').addEventListener('click', async () =>
 
   if (duplicateTabs.length > 0 && confirm(`Close ${duplicateTabs.length} duplicate tabs?`)) {
     const tabIds = duplicateTabs.map((t) => t.id);
-    await chrome.tabs.remove(tabIds);
+    try {
+      await chrome.tabs.remove(tabIds);
+    } catch (error) {
+      console.warn('Some tabs could not be closed (may already be closed):', error);
+    }
     selectedTabs.clear();
     loadTabs();
+  } else if (duplicateTabs.length === 0) {
+    alert('No duplicate tabs found!');
   }
 });
 
@@ -509,7 +562,11 @@ document.getElementById('bulkSaveTasks').addEventListener('click', async () => {
 
 document.getElementById('bulkClose').addEventListener('click', async () => {
   if (selectedTabs.size > 0 && confirm(`Close ${selectedTabs.size} selected tabs?`)) {
-    await chrome.tabs.remove(Array.from(selectedTabs));
+    try {
+      await chrome.tabs.remove(Array.from(selectedTabs));
+    } catch (error) {
+      console.warn('Some tabs could not be closed (may already be closed):', error);
+    }
     selectedTabs.clear();
     loadTabs();
   }
@@ -528,7 +585,11 @@ async function bulkSaveSelected(listName) {
   }
 
   // Close saved tabs
-  await chrome.tabs.remove(Array.from(selectedTabs));
+  try {
+    await chrome.tabs.remove(Array.from(selectedTabs));
+  } catch (error) {
+    console.warn('Some tabs could not be closed (may already be closed):', error);
+  }
   selectedTabs.clear();
   loadTabs();
 }
@@ -544,12 +605,9 @@ function showError(message) {
     <div class="empty-state">
       <h3>Error</h3>
       <p>${message}</p>
-      <button class="btn btn-primary" onclick="loadTabs()">Try Again</button>
+      <button class="btn btn-primary" data-action="retry">Try Again</button>
     </div>
   `;
 }
 
-// Make functions available globally for onclick handlers
-window.saveGroupToList = saveGroupToList;
-window.closeDuplicatesInGroup = closeDuplicatesInGroup;
-window.switchToTab = switchToTab;
+// Functions are now handled via event delegation, no need for global assignments
