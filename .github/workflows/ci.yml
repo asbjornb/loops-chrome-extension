@@ -54,13 +54,13 @@ jobs:
     - name: Check for common Chrome extension issues
       run: |
         # Check for inline scripts (not allowed in manifest v3)
-        if grep -r "javascript:" --include="*.html" .; then
+        if grep -r "javascript:" --include="*.html" --exclude-dir=node_modules .; then
           echo "❌ Found inline JavaScript (not allowed in manifest v3)"
           exit 1
         fi
         
-        # Check for eval usage (restricted in extensions)
-        if grep -r "eval(" --include="*.js" .; then
+        # Check for eval usage (restricted in extensions) - exclude node_modules
+        if grep -r "eval(" --include="*.js" --exclude-dir=node_modules .; then
           echo "❌ Found eval() usage (restricted in extensions)"
           exit 1
         fi
