@@ -13,7 +13,18 @@ A Chrome extension that helps you manage tabs better by saving them to Read Late
 
 ## Keyboard Shortcuts
 
-### Default Shortcuts (Pre-configured)
+Loops extends Chrome's built-in tab management shortcuts with smart saving capabilities.
+
+### Chrome + Loops Shortcuts Cheat Sheet
+
+| Chrome Built-in                 | Loops Extension                              |
+| ------------------------------- | -------------------------------------------- |
+| `Ctrl+W` - Close tab            | `Alt+R` - Save to Read Later & close         |
+| `Ctrl+Tab` - Next tab           | `Alt+T` - Save to Tasks & close              |
+| `Ctrl+Shift+Tab` - Previous tab | `Alt+Shift+R` - Save to Read Later with note |
+| `Ctrl+Shift+A` - Search tabs    | `Alt+Shift+T` - Save to Tasks with note      |
+
+### Default Loops Shortcuts (Pre-configured)
 
 | Shortcut      | Action                                             |
 | ------------- | -------------------------------------------------- |
