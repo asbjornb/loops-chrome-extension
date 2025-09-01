@@ -85,13 +85,27 @@ async function pullFromSync() {
       chrome.storage.sync.get(['readLater', 'tasks', 'lastSyncedAt', 'deviceId']),
     ]);
 
-    // Don't merge if sync data is empty or from same device
+    // Debug: Log what we found in sync storage
+    console.log('Sync data found:', {
+      hasLastSyncedAt: !!syncData.lastSyncedAt,
+      readLaterCount: (syncData.readLater || []).length,
+      tasksCount: (syncData.tasks || []).length,
+      syncDeviceId: syncData.deviceId?.slice(-9), // Last 9 chars for privacy
+    });
+
+    // Don't merge if sync data is empty
     if (!syncData.lastSyncedAt) {
-      console.log('No sync data found');
+      console.log('No sync data found in chrome.storage.sync');
       return { success: true, merged: false };
     }
 
     const currentDeviceId = await getDeviceId();
+    console.log('Device ID comparison:', {
+      current: currentDeviceId.slice(-9),
+      sync: syncData.deviceId?.slice(-9),
+      areEqual: syncData.deviceId === currentDeviceId,
+    });
+
     if (syncData.deviceId === currentDeviceId) {
       console.log('Sync data is from current device, skipping merge');
       return { success: true, merged: false };
@@ -133,9 +147,49 @@ async function getDeviceId() {
   return deviceId;
 }
 
+// Debug function to inspect sync storage
+async function debugSyncStorage() {
+  console.log('=== Chrome Sync Storage Debug ===');
+
+  try {
+    const [localData, syncData] = await Promise.all([
+      chrome.storage.local.get(['readLater', 'tasks', 'deviceId']),
+      chrome.storage.sync.get(),
+    ]);
+
+    console.log('Local storage:', {
+      readLaterCount: (localData.readLater || []).length,
+      tasksCount: (localData.tasks || []).length,
+      deviceId: localData.deviceId?.slice(-9),
+    });
+
+    console.log('Sync storage keys:', Object.keys(syncData));
+    console.log('Sync storage data:', {
+      readLaterCount: (syncData.readLater || []).length,
+      tasksCount: (syncData.tasks || []).length,
+      lastSyncedAt: syncData.lastSyncedAt,
+      deviceId: syncData.deviceId?.slice(-9),
+      totalSize: JSON.stringify(syncData).length,
+    });
+
+    // Check quota usage
+    const bytesInUse = await chrome.storage.sync.getBytesInUse();
+    console.log('Chrome sync quota:', {
+      bytesInUse,
+      maxBytes: 102400, // 100KB
+      percentUsed: Math.round((bytesInUse / 102400) * 100),
+    });
+  } catch (error) {
+    console.error('Debug failed:', error);
+  }
+}
+
 // Full sync operation (pull then push)
 async function performSync() {
   console.log('Starting sync operation...');
+
+  // Debug current state
+  await debugSyncStorage();
 
   // First pull to get any changes from other devices
   const pullResult = await pullFromSync();
@@ -209,6 +263,7 @@ const loopsSync = {
   pullFromSync,
   startAutoSync,
   stopAutoSync,
+  debugSyncStorage,
   getConfig: () => SYNC_CONFIG,
   setEnabled: (enabled) => {
     SYNC_CONFIG.enabled = enabled;
