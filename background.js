@@ -111,13 +111,13 @@ async function updateBadge() {
         text: tabCount > 99 ? '99+' : tabCount.toString(),
       });
 
-      // Color coding based on tab count
-      if (tabCount < 10) {
-        chrome.action.setBadgeBackgroundColor({ color: '#10b981' }); // Green - good
-      } else if (tabCount < 20) {
-        chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' }); // Amber - warning
+      // Color coding based on tab count (adjusted for tab hoarders)
+      if (tabCount < 25) {
+        chrome.action.setBadgeBackgroundColor({ color: '#10b981' }); // Green - reasonable
+      } else if (tabCount < 50) {
+        chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' }); // Amber - getting heavy
       } else {
-        chrome.action.setBadgeBackgroundColor({ color: '#ef4444' }); // Red - too many!
+        chrome.action.setBadgeBackgroundColor({ color: '#ef4444' }); // Red - seriously, clean up!
       }
     } else {
       chrome.action.setBadgeText({ text: '' });
