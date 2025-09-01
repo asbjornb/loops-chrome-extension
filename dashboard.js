@@ -65,19 +65,17 @@ function renderItems() {
       (item) => `
     <div class="item-card" data-id="${item.id}">
       <input type="checkbox" class="checkbox" data-id="${item.id}">
-      <div class="item-header">
-        ${
-          item.favIconUrl
-            ? `<img src="${item.favIconUrl}" class="item-favicon" onerror="this.style.display='none'">`
-            : '<div class="item-favicon" style="background:#f3f4f6;border-radius:3px;"></div>'
-        }
-        <div class="item-content">
-          <div class="item-title" data-url="${item.url}">${item.title || 'Untitled'}</div>
-          <div class="item-url">${new URL(item.url).hostname}</div>
-        </div>
+      ${
+        item.favIconUrl
+          ? `<img src="${item.favIconUrl}" class="item-favicon" onerror="this.style.display='none'">`
+          : '<div class="item-favicon" style="background:#f3f4f6;border-radius:3px;"></div>'
+      }
+      <div class="item-content">
+        <div class="item-title" data-url="${item.url}">${item.title || 'Untitled'}</div>
+        <div class="item-url">${item.url}</div>
+        ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
       </div>
-      ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
-      <div class="item-footer">
+      <div class="item-meta">
         <div class="item-time">${formatTime(item.savedAt)}</div>
         <div class="item-actions">
           <button class="action-btn action-btn-delete" data-id="${item.id}" title="Delete">
