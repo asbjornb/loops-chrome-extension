@@ -1,16 +1,22 @@
 let currentList = 'readLater';
 
-// Load and display list
+// Load and display list (limited to 5 items for popup)
 async function loadList(listName) {
   const list = await chrome.storage.local.get([listName]);
   const items = list[listName] || [];
 
   const listContent = document.getElementById('listContent');
+  const moreItems = document.getElementById('moreItems');
+
+  const maxItems = 5;
+  const displayItems = items.slice(0, maxItems);
+  const hasMore = items.length > maxItems;
 
   if (items.length === 0) {
     listContent.innerHTML = '<div class="empty-state">No items saved yet</div>';
+    moreItems.style.display = 'none';
   } else {
-    listContent.innerHTML = items
+    listContent.innerHTML = displayItems
       .map(
         (item) => `
       <div class="list-item" data-url="${item.url}" data-id="${item.id}">
@@ -25,6 +31,15 @@ async function loadList(listName) {
     `
       )
       .join('');
+
+    // Show "and X more" indicator
+    if (hasMore) {
+      const moreCount = items.length - maxItems;
+      moreItems.textContent = `and ${moreCount} more...`;
+      moreItems.style.display = 'block';
+    } else {
+      moreItems.style.display = 'none';
+    }
 
     // Add click handlers to open tabs
     listContent.querySelectorAll('.list-item').forEach((item) => {
@@ -114,6 +129,11 @@ document.querySelectorAll('.tab-button').forEach((button) => {
     currentList = button.dataset.list;
     loadList(currentList);
   });
+});
+
+// View All button - opens dashboard
+document.getElementById('viewAllBtn').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
 });
 
 // Clear button handler

@@ -148,6 +148,31 @@
         background: #f9fafb;
         color: #ef4444;
       }
+      .view-all-btn {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #4f46e5;
+        background: #4f46e5;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 12px;
+        transition: all 0.2s;
+      }
+      .view-all-btn:hover {
+        background: #4338ca;
+        border-color: #4338ca;
+      }
+      .more-items {
+        text-align: center;
+        color: #6b7280;
+        font-size: 12px;
+        padding: 8px;
+        margin-top: 8px;
+        font-style: italic;
+      }
       .empty-state {
         text-align: center;
         color: #9ca3af;
@@ -198,6 +223,9 @@
         <div class="empty-state">No items saved yet</div>
       </div>
 
+      <div id="moreItems" class="more-items" style="display: none"></div>
+
+      <button id="viewAllBtn" class="view-all-btn">View All & Search</button>
       <button id="clearBtn" class="clear-btn" style="display: none">Clear All</button>
     </div>
 
