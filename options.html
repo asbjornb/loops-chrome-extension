@@ -369,9 +369,15 @@
               <label for="githubToken">Personal Access Token</label>
               <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
               <p class="help-text">
-                Create a token at
-                <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings</a>
-                with "gist" permissions.
+                <strong>Step-by-step setup:</strong><br />
+                1. Go to
+                <a href="https://github.com/settings/tokens" target="_blank"
+                  >GitHub Settings → Personal access tokens</a
+                ><br />
+                2. Click "Generate new token" → "Generate new token (classic)"<br />
+                3. Give it a name like "Loops Extension"<br />
+                4. <strong>🔑 Check the "gist" permission</strong> (required for sync to work)<br />
+                5. Click "Generate token" and copy the token here
               </p>
             </div>
             <div class="form-group">

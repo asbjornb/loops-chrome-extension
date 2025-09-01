@@ -210,7 +210,7 @@ async function connectGitHub() {
 
     await saveSettings();
 
-    showStatus(`Connected to GitHub as ${result.user.login}!`, 'success');
+    showStatus(`✅ Connected to GitHub as ${result.user.login} with gist permissions!`, 'success');
     updateSyncStatus();
     updateProviderStates();
   } catch (error) {
@@ -218,7 +218,7 @@ async function connectGitHub() {
     showStatus('Failed to connect to GitHub: ' + error.message, 'error');
   } finally {
     const connectBtn = document.getElementById('githubConnect');
-    connectBtn.textContent = 'Test Connection';
+    connectBtn.textContent = 'Test Connection & Permissions';
     connectBtn.disabled = false;
   }
 }
@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const config = document.getElementById('githubConfig');
     if (config.classList.contains('hidden')) {
       config.classList.remove('hidden');
-      document.getElementById('githubConnect').textContent = 'Test Connection';
+      document.getElementById('githubConnect').textContent = 'Test Connection & Permissions';
     } else {
       connectGitHub();
     }

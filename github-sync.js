@@ -13,10 +13,11 @@ class GitHubSync {
     return this;
   }
 
-  // Test GitHub connection
+  // Test GitHub connection and gist permissions
   async testConnection(token) {
     try {
-      const response = await fetch(`${this.baseUrl}/user`, {
+      // First check if token can access user info
+      const userResponse = await fetch(`${this.baseUrl}/user`, {
         headers: {
           Authorization: `token ${token}`,
           Accept: 'application/vnd.github.v3+json',
@@ -24,11 +25,64 @@ class GitHubSync {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      if (!userResponse.ok) {
+        if (userResponse.status === 401) {
+          throw new Error('Invalid token - please check your Personal Access Token');
+        }
+        throw new Error(`GitHub API error: ${userResponse.status} ${userResponse.statusText}`);
       }
 
-      const user = await response.json();
+      const user = await userResponse.json();
+
+      // Test gist permissions by creating and immediately deleting a test gist
+      const testGist = {
+        description: 'Loops Extension - Connection Test (will be deleted)',
+        public: false,
+        files: {
+          'test.txt': {
+            content:
+              'This is a test gist created by Loops extension to verify gist permissions. It will be deleted automatically.',
+          },
+        },
+      };
+
+      const gistResponse = await fetch(`${this.baseUrl}/gists`, {
+        method: 'POST',
+        headers: {
+          Authorization: `token ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Loops-Extension',
+        },
+        body: JSON.stringify(testGist),
+      });
+
+      if (!gistResponse.ok) {
+        if (gistResponse.status === 403) {
+          throw new Error(
+            'Token lacks gist permissions - please create a new token with "gist" scope enabled'
+          );
+        }
+        throw new Error(`Gist creation failed: ${gistResponse.status} ${gistResponse.statusText}`);
+      }
+
+      const createdGist = await gistResponse.json();
+
+      // Clean up the test gist
+      try {
+        await fetch(`${this.baseUrl}/gists/${createdGist.id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'Loops-Extension',
+          },
+        });
+      } catch (deleteError) {
+        console.warn('Failed to delete test gist:', deleteError);
+        // Not critical - user can delete manually if needed
+      }
+
       return { success: true, user };
     } catch (error) {
       console.error('GitHub connection test failed:', error);
