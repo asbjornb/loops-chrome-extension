@@ -49,7 +49,11 @@ async function pushToSync() {
       tasks: (localData.tasks || []).slice(0, SYNC_CONFIG.maxItemsPerList),
       lastSyncedAt: new Date().toISOString(),
       deviceId: await getDeviceId(),
+      extensionId: chrome.runtime.id, // Help with debugging
     };
+
+    // Use a shared key that's the same across all installations
+    const sharedSyncKey = 'loops_extension_data';
 
     // Check size before syncing
     const dataSize = JSON.stringify(syncData).length;
@@ -61,7 +65,8 @@ async function pushToSync() {
       syncData.tasks = syncData.tasks.slice(0, 25);
     }
 
-    await chrome.storage.sync.set(syncData);
+    // Store data under a shared key instead of separate keys
+    await chrome.storage.sync.set({ [sharedSyncKey]: syncData });
     console.log('Data synced to cloud:', {
       readLater: syncData.readLater.length,
       tasks: syncData.tasks.length,
@@ -80,10 +85,34 @@ async function pullFromSync() {
   if (!SYNC_CONFIG.enabled) return;
 
   try {
-    const [localData, syncData] = await Promise.all([
+    const sharedSyncKey = 'loops_extension_data';
+    const [localData, syncStorage] = await Promise.all([
       chrome.storage.local.get(['readLater', 'tasks']),
-      chrome.storage.sync.get(['readLater', 'tasks', 'lastSyncedAt', 'deviceId']),
+      chrome.storage.sync.get([sharedSyncKey]),
     ]);
+
+    const syncData = syncStorage[sharedSyncKey] || {};
+
+    // Also check old format for backward compatibility
+    if (!syncData.lastSyncedAt) {
+      const oldFormat = await chrome.storage.sync.get([
+        'readLater',
+        'tasks',
+        'lastSyncedAt',
+        'deviceId',
+      ]);
+      if (oldFormat.lastSyncedAt) {
+        console.log('Found data in old format, migrating...');
+        syncData.readLater = oldFormat.readLater || [];
+        syncData.tasks = oldFormat.tasks || [];
+        syncData.lastSyncedAt = oldFormat.lastSyncedAt;
+        syncData.deviceId = oldFormat.deviceId;
+
+        // Save in new format and clean up old keys
+        await chrome.storage.sync.set({ [sharedSyncKey]: syncData });
+        await chrome.storage.sync.remove(['readLater', 'tasks', 'lastSyncedAt', 'deviceId']);
+      }
+    }
 
     // Debug: Log what we found in sync storage
     console.log('Sync data found:', {
@@ -91,6 +120,7 @@ async function pullFromSync() {
       readLaterCount: (syncData.readLater || []).length,
       tasksCount: (syncData.tasks || []).length,
       syncDeviceId: syncData.deviceId?.slice(-9), // Last 9 chars for privacy
+      extensionId: syncData.extensionId,
     });
 
     // Don't merge if sync data is empty
@@ -183,10 +213,13 @@ async function debugSyncStorage() {
   }
 
   try {
-    const [localData, syncData] = await Promise.all([
+    const sharedSyncKey = 'loops_extension_data';
+    const [localData, allSyncData] = await Promise.all([
       chrome.storage.local.get(['readLater', 'tasks', 'deviceId']),
       chrome.storage.sync.get(),
     ]);
+
+    const syncData = allSyncData[sharedSyncKey] || allSyncData; // Fallback to old format
 
     console.log('Local storage:', {
       readLaterCount: (localData.readLater || []).length,
@@ -194,13 +227,15 @@ async function debugSyncStorage() {
       deviceId: localData.deviceId?.slice(-9),
     });
 
-    console.log('Sync storage keys:', Object.keys(syncData));
+    console.log('Sync storage keys:', Object.keys(allSyncData));
     console.log('Sync storage data:', {
       readLaterCount: (syncData.readLater || []).length,
       tasksCount: (syncData.tasks || []).length,
       lastSyncedAt: syncData.lastSyncedAt,
       deviceId: syncData.deviceId?.slice(-9),
+      extensionId: syncData.extensionId,
       totalSize: JSON.stringify(syncData).length,
+      usingSharedKey: !!allSyncData[sharedSyncKey],
     });
 
     // Check quota usage
@@ -214,9 +249,16 @@ async function debugSyncStorage() {
     // Provide troubleshooting info
     if (syncData.readLater?.length === 0 && syncData.tasks?.length === 0) {
       console.log('⚠️ No items in sync storage. This could mean:');
+      console.log('   - Chrome extension sync has limitations');
       console.log('   - Extension sync is not enabled');
       console.log('   - Different Google account on devices');
       console.log("   - Sync data hasn't propagated yet (can take a few minutes)");
+      console.log('');
+      console.log('💡 Recommendation: Use GitHub sync instead!');
+      console.log('   - More reliable than Chrome sync');
+      console.log('   - No storage limits');
+      console.log('   - Version history');
+      console.log('   - Set up in Options → GitHub Gists');
     }
   } catch (error) {
     console.error('Debug failed:', error);
