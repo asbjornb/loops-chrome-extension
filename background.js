@@ -137,18 +137,82 @@ chrome.tabs.onUpdated.addListener(updateBadge);
 
 console.warn('Loops extension loaded - Save with notes enabled');
 
-// Load sync module
+// Load sync modules
 try {
   importScripts('sync.js');
-  console.log('Sync module loaded in service worker');
+  console.log('Chrome sync module loaded in service worker');
 
-  // Verify sync is available
+  // Verify Chrome sync is available
   if (typeof self.loopsSync !== 'undefined') {
-    console.log('Sync functions available:', Object.keys(self.loopsSync));
+    console.log('Chrome sync functions available:', Object.keys(self.loopsSync));
   } else {
     console.warn('Sync module loaded but loopsSync not available');
   }
 } catch (error) {
-  console.error('Failed to load sync module:', error.message);
-  console.error('Sync functionality will be disabled');
+  console.error('Failed to load Chrome sync module:', error.message);
+  console.error('Chrome sync functionality will be disabled');
 }
+
+// Load GitHub sync module
+try {
+  importScripts('github-sync.js');
+  console.log('GitHub sync module loaded in service worker');
+
+  if (typeof self.GitHubSync !== 'undefined') {
+    console.log('GitHub sync class available');
+  } else {
+    console.warn('GitHub sync module loaded but GitHubSync not available');
+  }
+} catch (error) {
+  console.error('Failed to load GitHub sync module:', error.message);
+  console.error('GitHub sync functionality will be disabled');
+}
+
+// Automatic sync function
+async function performAutoSync() {
+  try {
+    const data = await chrome.storage.local.get(['loopsSettings']);
+    const settings = data.loopsSettings;
+
+    if (!settings) return;
+
+    // Chrome sync
+    if (settings.chromeSync?.enabled && typeof self.loopsSync !== 'undefined') {
+      try {
+        await self.loopsSync.performSync();
+        console.log('Auto Chrome sync completed');
+      } catch (error) {
+        console.error('Auto Chrome sync failed:', error);
+      }
+    }
+
+    // GitHub sync
+    if (
+      settings.githubSync?.enabled &&
+      settings.githubSync?.token &&
+      typeof self.GitHubSync !== 'undefined'
+    ) {
+      try {
+        const githubSync = new self.GitHubSync();
+        await githubSync.init(settings);
+        await githubSync.performSync();
+        console.log('Auto GitHub sync completed');
+      } catch (error) {
+        console.error('Auto GitHub sync failed:', error);
+      }
+    }
+  } catch (error) {
+    console.error('Auto sync failed:', error);
+  }
+}
+
+// Set up periodic sync
+chrome.storage.local.get(['loopsSettings'], (data) => {
+  const settings = data.loopsSettings;
+  const syncInterval = settings?.chromeSync?.autoSyncInterval || 300000; // Default 5 minutes
+
+  if (syncInterval > 0) {
+    setInterval(performAutoSync, syncInterval);
+    console.log(`Auto sync enabled with ${syncInterval / 1000}s interval`);
+  }
+});

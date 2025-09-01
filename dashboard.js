@@ -284,9 +284,12 @@ document.getElementById('deselectAllBtn').addEventListener('click', () => {
 clearAllBtn.addEventListener('click', clearAllItems);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('importBtn').addEventListener('click', importData);
+document.getElementById('optionsBtn').addEventListener('click', () => {
+  chrome.runtime.openOptionsPage();
+});
 
-// Load sync module and initialize sync status
-function loadSyncModule() {
+// Load sync modules and initialize sync status
+async function loadSyncModule() {
   if (typeof window.loopsSync === 'undefined') {
     // Load sync.js if not already loaded
     const script = document.createElement('script');
@@ -306,10 +309,11 @@ loadSyncModule();
 
 // Sync status management
 function updateSyncStatus() {
-  chrome.storage.local.get(['syncStatus'], (data) => {
+  chrome.storage.local.get(['syncStatus', 'loopsSettings'], (data) => {
     const syncStatus = document.getElementById('syncStatus');
     const syncIcon = syncStatus.querySelector('.sync-icon');
     const syncText = syncStatus.querySelector('.sync-text');
+    const settings = data.loopsSettings;
 
     if (data.syncStatus) {
       const status = data.syncStatus;
@@ -334,8 +338,14 @@ function updateSyncStatus() {
         syncText.textContent = 'Sync: Error';
       }
 
-      // Add tooltip with more info
+      // Build tooltip with provider info
+      const enabledProviders = [];
+      if (settings?.chromeSync?.enabled) enabledProviders.push('Chrome');
+      if (settings?.githubSync?.enabled && settings?.githubSync?.token)
+        enabledProviders.push('GitHub');
+
       const tooltip =
+        `Providers: ${enabledProviders.length > 0 ? enabledProviders.join(', ') : 'None'}\n` +
         `Last sync: ${lastSync.toLocaleString()}\n` +
         `Items synced: ${status.itemsSynced || 0}\n` +
         `Items merged: ${status.itemsMerged || 0}\n` +
@@ -345,7 +355,16 @@ function updateSyncStatus() {
       syncStatus.className = 'sync-status';
       syncIcon.textContent = '☁️';
       syncText.textContent = 'Sync: Ready';
-      syncStatus.title = 'Chrome Storage Sync - syncs recent items across devices';
+      // Show which providers are enabled
+      const enabledProviders = [];
+      if (settings?.chromeSync?.enabled) enabledProviders.push('Chrome');
+      if (settings?.githubSync?.enabled && settings?.githubSync?.token)
+        enabledProviders.push('GitHub');
+
+      syncStatus.title =
+        enabledProviders.length > 0
+          ? `Sync ready with: ${enabledProviders.join(', ')}`
+          : 'No sync providers configured - visit Options to set up';
     }
   });
 }
@@ -362,9 +381,42 @@ document.getElementById('syncStatus').addEventListener('click', async () => {
   syncText.textContent = 'Syncing...';
 
   try {
-    if (window.loopsSync) {
-      await window.loopsSync.performSync();
+    // Get current settings to determine which sync methods to use
+    const data = await chrome.storage.local.get(['loopsSettings']);
+    const settings = data.loopsSettings;
+
+    // Track sync status for logging
+
+    // Chrome sync
+    if (window.loopsSync && settings?.chromeSync?.enabled) {
+      try {
+        await window.loopsSync.performSync();
+      } catch (error) {
+        console.error('Chrome sync failed:', error);
+      }
     }
+
+    // GitHub sync
+    if (settings?.githubSync?.enabled && settings?.githubSync?.token) {
+      try {
+        // Load GitHub sync module if needed
+        if (!window.GitHubSync) {
+          const script = document.createElement('script');
+          script.src = 'github-sync.js';
+          document.head.appendChild(script);
+          await new Promise((resolve) => {
+            script.onload = resolve;
+          });
+        }
+
+        const githubSyncInstance = new window.GitHubSync();
+        await githubSyncInstance.init(settings);
+        await githubSyncInstance.performSync();
+      } catch (error) {
+        console.error('GitHub sync failed:', error);
+      }
+    }
+
     // Refresh the current view after sync
     loadList(currentList);
   } catch (error) {

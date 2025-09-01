@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Loops - Close tabs, keep context",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Manage tabs better by saving them to Read Later or Task lists",
   "permissions": ["tabs", "storage", "activeTab", "scripting"],
   "background": {
@@ -50,5 +50,6 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "options_page": "options.html"
 }
