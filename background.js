@@ -136,3 +136,19 @@ chrome.tabs.onRemoved.addListener(updateBadge);
 chrome.tabs.onUpdated.addListener(updateBadge);
 
 console.warn('Loops extension loaded - Save with notes enabled');
+
+// Load sync module
+try {
+  importScripts('sync.js');
+  console.log('Sync module loaded in service worker');
+
+  // Verify sync is available
+  if (typeof self.loopsSync !== 'undefined') {
+    console.log('Sync functions available:', Object.keys(self.loopsSync));
+  } else {
+    console.warn('Sync module loaded but loopsSync not available');
+  }
+} catch (error) {
+  console.error('Failed to load sync module:', error.message);
+  console.error('Sync functionality will be disabled');
+}

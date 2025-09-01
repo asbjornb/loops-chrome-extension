@@ -285,5 +285,105 @@ clearAllBtn.addEventListener('click', clearAllItems);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('importBtn').addEventListener('click', importData);
 
+// Load sync module and initialize sync status
+function loadSyncModule() {
+  if (typeof window.loopsSync === 'undefined') {
+    // Load sync.js if not already loaded
+    const script = document.createElement('script');
+    script.src = 'sync.js';
+    script.onload = () => {
+      console.log('Sync module loaded in dashboard');
+      updateSyncStatus();
+    };
+    document.head.appendChild(script);
+  } else {
+    updateSyncStatus();
+  }
+}
+
+// Initialize sync module
+loadSyncModule();
+
+// Sync status management
+function updateSyncStatus() {
+  chrome.storage.local.get(['syncStatus'], (data) => {
+    const syncStatus = document.getElementById('syncStatus');
+    const syncIcon = syncStatus.querySelector('.sync-icon');
+    const syncText = syncStatus.querySelector('.sync-text');
+
+    if (data.syncStatus) {
+      const status = data.syncStatus;
+      const lastSync = new Date(status.lastSyncTime);
+      const timeSince = Date.now() - lastSync.getTime();
+      const minutesSince = Math.floor(timeSince / 60000);
+
+      if (status.pullSuccess && status.pushSuccess) {
+        syncStatus.className = 'sync-status';
+        syncIcon.textContent = '☁️';
+
+        if (minutesSince < 1) {
+          syncText.textContent = 'Sync: Just now';
+        } else if (minutesSince < 60) {
+          syncText.textContent = `Sync: ${minutesSince}m ago`;
+        } else {
+          syncText.textContent = 'Sync: 1h+ ago';
+        }
+      } else {
+        syncStatus.className = 'sync-status error';
+        syncIcon.textContent = '⚠️';
+        syncText.textContent = 'Sync: Error';
+      }
+
+      // Add tooltip with more info
+      const tooltip =
+        `Last sync: ${lastSync.toLocaleString()}\n` +
+        `Items synced: ${status.itemsSynced || 0}\n` +
+        `Items merged: ${status.itemsMerged || 0}\n` +
+        `Status: ${status.pullSuccess && status.pushSuccess ? 'Success' : 'Error'}`;
+      syncStatus.title = tooltip;
+    } else {
+      syncStatus.className = 'sync-status';
+      syncIcon.textContent = '☁️';
+      syncText.textContent = 'Sync: Ready';
+      syncStatus.title = 'Chrome Storage Sync - syncs recent items across devices';
+    }
+  });
+}
+
+// Manual sync trigger
+document.getElementById('syncStatus').addEventListener('click', async () => {
+  const syncStatus = document.getElementById('syncStatus');
+  const syncIcon = syncStatus.querySelector('.sync-icon');
+  const syncText = syncStatus.querySelector('.sync-text');
+
+  // Show syncing state
+  syncStatus.className = 'sync-status syncing';
+  syncIcon.textContent = '🔄';
+  syncText.textContent = 'Syncing...';
+
+  try {
+    if (window.loopsSync) {
+      await window.loopsSync.performSync();
+    }
+    // Refresh the current view after sync
+    loadList(currentList);
+  } catch (error) {
+    console.error('Manual sync failed:', error);
+  }
+
+  // Update status after sync
+  setTimeout(updateSyncStatus, 1000);
+});
+
+// Listen for sync status updates
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.syncStatus) {
+    updateSyncStatus();
+  }
+});
+
 // Initialize
 loadList('readLater');
+
+// Update sync status periodically
+setInterval(updateSyncStatus, 30000); // Every 30 seconds
