@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on tags like v1.0.0, v1.0.1, etc.
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Get version from manifest
+      id: version
+      run: |
+        VERSION=$(grep '"version"' manifest.json | sed 's/.*"version": "\(.*\)".*/\1/')
+        echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+        echo "Building version ${VERSION}"
+    
+    - name: Create extension package
+      run: |
+        mkdir -p dist
+        zip -r dist/loops-extension.zip . \
+          -x "*.git*" \
+          -x "node_modules/*" \
+          -x "dist/*" \
+          -x "scripts/*" \
+          -x "*.sh" \
+          -x "*.md" \
+          -x "package*.json" \
+          -x "eslint.config.js" \
+          -x ".prettierrc" \
+          -x ".husky/*" \
+          -x "test-*.js" \
+          -x ".github/*" \
+          -x "IDEAS.md" \
+          -x "TEST.md" \
+          -x "spec.md" \
+          -x "*.log" \
+          -x ".DS_Store" \
+          -x "Thumbs.db"
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ steps.version.outputs.VERSION }}
+        body: |
+          ## Loops Extension v${{ steps.version.outputs.VERSION }}
+          
+          ### Installation
+          1. Download `loops-extension.zip` from the assets below
+          2. Open Chrome and go to `chrome://extensions/`
+          3. Enable "Developer mode"
+          4. Drag and drop the zip file or use "Load unpacked" after extracting
+          
+          ### What's New
+          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/master/CHANGELOG.md) for details.
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/loops-extension.zip
+        asset_name: loops-extension-v${{ steps.version.outputs.VERSION }}.zip
+        asset_content_type: application/zip
