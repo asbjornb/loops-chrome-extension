@@ -51,31 +51,31 @@ All data stays on your device or syncs through YOUR accounts (Chrome/GitHub). We
 Open source and built for productivity enthusiasts who want to tame their tab chaos!
 ```
 
-## Screenshots Needed
+## Screenshots
 
-📸 **Screenshot 1: Main Dashboard** ✅
+### 📸 **Screenshot 1: Main Dashboard**
 
-- Shows the dashboard with saved tabs in both "Read Later" and "Tasks" lists
-- Highlights the clean, modern interface
-- Includes sample saved items with favicons
+![Main Dashboard](screenshots/screenshot_dashboard.png)
 
-📸 **Screenshot 2: Note-Taking Dialog** ✅
+Shows the dashboard with saved tabs in both "Read Later" and "Tasks" lists, highlighting the clean, modern interface with sample saved items and favicons.
 
-- Shows the note dialog when adding context to saved tabs
-- Demonstrates the Alt+Shift+R functionality for adding notes
-- Highlights the "keep context" part of the value proposition
+### 📸 **Screenshot 2: Note-Taking Dialog** 
 
-📸 **Screenshot 3: Tab Manager View** ✅
+![Note-Taking Dialog](screenshots/alt_shift_r_adds_note_with_url.png)
 
-- Shows the tab manager interface with bulk operations
-- Demonstrates smart organization (32 tabs, 1 duplicate, 21 inactive)
-- Highlights bulk action buttons and cleanup features
+Shows the note dialog when adding context to saved tabs. Demonstrates the Alt+Shift+R functionality for adding notes - highlighting the "keep context" part of the value proposition.
 
-📸 **Screenshot 4: Options/Settings Page** ✅
+### 📸 **Screenshot 3: Tab Manager View**
 
-- Displays sync configuration options (Chrome Sync, GitHub Gists)
-- Shows active connection statuses
-- Highlights the auto-save functionality and cross-device sync
+![Tab Manager](screenshots/tab_manager.png)
+
+Shows the tab manager interface with bulk operations. Demonstrates smart organization (32 tabs, 1 duplicate, 21 inactive) and highlights bulk action buttons and cleanup features.
+
+### 📸 **Screenshot 4: Options/Settings Page**
+
+![Options Page](screenshots/options_page.png)
+
+Displays sync configuration options (Chrome Sync, GitHub Gists) with active connection statuses. Highlights the auto-save functionality and cross-device sync capabilities.
 
 ## Icon & Assets
 
@@ -85,13 +85,13 @@ Open source and built for productivity enthusiasts who want to tame their tab ch
 
 ## Privacy Policy
 
-See `PRIVACY-POLICY.md` - emphasizes local-first approach and no data collection.
+See [PRIVACY-POLICY.md](PRIVACY-POLICY.md) - emphasizes local-first approach and no data collection.
 
 ## Support & Documentation
 
-- GitHub Repository: [Add your repo URL]
-- Issues/Support: [Add your GitHub issues URL]
-- Website: [Optional - add if you create one]
+- **GitHub Repository**: [https://github.com/asbjornb/loops-chrome-extension](https://github.com/asbjornb/loops-chrome-extension)
+- **Issues/Support**: [https://github.com/asbjornb/loops-chrome-extension/issues](https://github.com/asbjornb/loops-chrome-extension/issues)
+- **Release Package**: [loops-extension-v1.0.0.zip](loops-extension-v1.0.0.zip) (Ready for Chrome Web Store)
 
 ## Pricing
 
