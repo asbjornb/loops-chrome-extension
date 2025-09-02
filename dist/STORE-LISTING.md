@@ -102,11 +102,34 @@ See [PRIVACY-POLICY.md](PRIVACY-POLICY.md) - emphasizes local-first approach and
 
 **Free** - No paid features, no subscriptions, no ads
 
+## Single Purpose
+
+Tab management and organization tool that saves open browser tabs to categorized lists (Read Later/Tasks) with optional sync across devices.
+
 ## Permissions Justification
 
-- `tabs`: Read tab titles and URLs for saving
-- `activeTab`: Access current tab for quick save shortcuts
-- `storage`: Save data locally and sync across devices
-- `scripting`: Inject minimal scripts for keyboard shortcuts
+**`tabs` - Access browser tabs**
+
+- **Why needed**: Read tab title, URL, and favicon when user saves a tab
+- **What we do**: Extract basic tab information (title, URL, icon) to create saved tab entries
+- **What we DON'T do**: Never read tab content, never access browsing history, never track user behavior
+
+**`activeTab` - Access active tab**
+
+- **Why needed**: Get current tab information when user presses Alt+R or Alt+T shortcuts
+- **What we do**: Read only the currently active tab's title and URL when explicitly saving
+- **What we DON'T do**: Never access inactive tabs, never run in background on all tabs
+
+**`storage` - Store data locally**
+
+- **Why needed**: Save user's tab lists locally and optionally sync across their Chrome browsers
+- **What we do**: Store saved tabs, user settings, and sync data using Chrome's storage API
+- **What we DON'T do**: Never send data to external servers (except user's own GitHub if they choose)
+
+**`scripting` - Run content scripts**
+
+- **Why needed**: Show note-taking dialog when user presses Alt+Shift+R or Alt+Shift+T
+- **What we do**: Inject minimal script only when user explicitly saves tab with note
+- **What we DON'T do**: Never run scripts automatically, never modify page content, never track user activity
 
 ---
