@@ -72,11 +72,7 @@ async function pushToSync() {
 
     // Store data under a shared key instead of separate keys
     await chrome.storage.sync.set({ [sharedSyncKey]: syncData });
-    console.log('Data synced to cloud:', {
-      readLater: syncData.readLater.length,
-      tasks: syncData.tasks.length,
-      size: JSON.stringify(syncData).length,
-    });
+    // Data synced to cloud successfully
 
     return { success: true, itemsSynced: syncData.readLater.length + syncData.tasks.length };
   } catch (error) {
@@ -107,7 +103,7 @@ async function pullFromSync() {
         'deviceId',
       ]);
       if (oldFormat.lastSyncedAt) {
-        console.log('Found data in old format, migrating...');
+        // Migrating from old sync format
         syncData.readLater = oldFormat.readLater || [];
         syncData.tasks = oldFormat.tasks || [];
         syncData.lastSyncedAt = oldFormat.lastSyncedAt;
@@ -119,42 +115,53 @@ async function pullFromSync() {
       }
     }
 
-    // Debug: Log what we found in sync storage
-    console.log('Sync data found:', {
-      hasLastSyncedAt: !!syncData.lastSyncedAt,
-      readLaterCount: (syncData.readLater || []).length,
-      tasksCount: (syncData.tasks || []).length,
-      syncDeviceId: syncData.deviceId?.slice(-9), // Last 9 chars for privacy
-      extensionId: syncData.extensionId,
-    });
-
-    // Don't merge if sync data is empty
+    // Check if sync data exists and is valid
     if (!syncData.lastSyncedAt || (!syncData.readLater?.length && !syncData.tasks?.length)) {
-      console.log('No sync data found in chrome.storage.sync or data is empty');
       return { success: true, merged: false };
     }
 
-    // Always attempt to merge data from sync storage
-    // Chrome sync should handle conflicts naturally across devices
-    console.log('Found sync data to merge - proceeding with merge operation');
+    // Proceeding with sync data merge
 
     // Merge the data
     const merged = mergeData(localData, syncData);
 
     // Also merge settings if they exist in sync data
+    let githubRecoveryNeeded = false;
     if (syncData.settings) {
-      console.log('Merging synced settings (including GitHub token if present)');
+      // Merging synced settings (including GitHub token if present)
       merged.loopsSettings = { ...syncData.settings };
+
+      // Check if we have GitHub settings that might allow data recovery
+      const githubSettings = syncData.settings.githubSync;
+      if (githubSettings?.enabled && githubSettings?.token && githubSettings?.gistId) {
+        githubRecoveryNeeded = true;
+      }
     }
 
     // Save merged data and settings to local storage
     await chrome.storage.local.set(merged);
 
-    console.log('Data merged from cloud:', {
-      readLater: merged.readLater.length,
-      tasks: merged.tasks.length,
-      lastSyncedAt: syncData.lastSyncedAt,
-    });
+    // Attempt GitHub data recovery if settings were restored
+    if (githubRecoveryNeeded) {
+      try {
+        // Attempting automatic GitHub data recovery
+        setTimeout(async () => {
+          try {
+            const githubSync = new globalContext.GitHubSync();
+            await githubSync.init(merged.loopsSettings);
+            await githubSync.pullFromGitHub();
+
+            // GitHub recovery completed (items may have been recovered)
+          } catch (error) {
+            console.error('❌ Auto-recovery from GitHub failed:', error);
+          }
+        }, 1000);
+      } catch (error) {
+        console.error('Failed to setup GitHub auto-recovery:', error);
+      }
+    }
+
+    // Data merged from cloud successfully
 
     return {
       success: true,
@@ -182,8 +189,6 @@ async function getDeviceId() {
 
 // Check if Chrome sync is properly configured
 async function checkChromeSync() {
-  console.log('=== Chrome Sync Configuration Check ===');
-
   try {
     // Test if we can write to sync storage
     const testKey = 'loops_sync_test';
@@ -193,30 +198,20 @@ async function checkChromeSync() {
     const result = await chrome.storage.sync.get(testKey);
 
     if (result[testKey]?.timestamp === testValue.timestamp) {
-      console.log('✅ Chrome sync storage is working');
       await chrome.storage.sync.remove(testKey);
+      return true;
     } else {
-      console.error('❌ Chrome sync storage test failed');
+      console.error('Chrome sync storage test failed');
       return false;
     }
-
-    console.log('📋 To use Chrome sync, ensure:');
-    console.log('   1. You are signed into Chrome with a Google account');
-    console.log('   2. Chrome sync is enabled (chrome://settings/syncSetup)');
-    console.log('   3. Extensions sync is enabled in sync settings');
-    console.log('   4. Same Google account on all devices');
-
-    return true;
   } catch (error) {
-    console.error('❌ Chrome sync not available:', error.message);
+    console.error('Chrome sync not available:', error.message);
     return false;
   }
 }
 
 // Debug function to inspect sync storage
 async function debugSyncStorage() {
-  console.log('=== Chrome Sync Storage Debug ===');
-
   // First check if sync is working
   const syncWorking = await checkChromeSync();
   if (!syncWorking) {
@@ -225,51 +220,12 @@ async function debugSyncStorage() {
 
   try {
     const sharedSyncKey = 'loops_extension_data';
-    const [localData, allSyncData] = await Promise.all([
-      chrome.storage.local.get(['readLater', 'tasks', 'deviceId']),
-      chrome.storage.sync.get(),
-    ]);
-
+    const allSyncData = await chrome.storage.sync.get();
     const syncData = allSyncData[sharedSyncKey] || allSyncData; // Fallback to old format
 
-    console.log('Local storage:', {
-      readLaterCount: (localData.readLater || []).length,
-      tasksCount: (localData.tasks || []).length,
-      deviceId: localData.deviceId?.slice(-9),
-    });
-
-    console.log('Sync storage keys:', Object.keys(allSyncData));
-    console.log('Sync storage data:', {
-      readLaterCount: (syncData.readLater || []).length,
-      tasksCount: (syncData.tasks || []).length,
-      lastSyncedAt: syncData.lastSyncedAt,
-      deviceId: syncData.deviceId?.slice(-9),
-      extensionId: syncData.extensionId,
-      totalSize: JSON.stringify(syncData).length,
-      usingSharedKey: !!allSyncData[sharedSyncKey],
-    });
-
-    // Check quota usage
-    const bytesInUse = await chrome.storage.sync.getBytesInUse();
-    console.log('Chrome sync quota:', {
-      bytesInUse,
-      maxBytes: 102400, // 100KB
-      percentUsed: Math.round((bytesInUse / 102400) * 100),
-    });
-
-    // Provide troubleshooting info
+    // Warn if sync storage is empty (could indicate setup issues)
     if (syncData.readLater?.length === 0 && syncData.tasks?.length === 0) {
-      console.log('⚠️ No items in sync storage. This could mean:');
-      console.log('   - Chrome extension sync has limitations');
-      console.log('   - Extension sync is not enabled');
-      console.log('   - Different Google account on devices');
-      console.log("   - Sync data hasn't propagated yet (can take a few minutes)");
-      console.log('');
-      console.log('💡 Recommendation: Use GitHub sync instead!');
-      console.log('   - More reliable than Chrome sync');
-      console.log('   - No storage limits');
-      console.log('   - Version history');
-      console.log('   - Set up in Options → GitHub Gists');
+      console.warn('Chrome sync storage appears to be empty - check Chrome sync settings');
     }
   } catch (error) {
     console.error('Debug failed:', error);
@@ -278,8 +234,6 @@ async function debugSyncStorage() {
 
 // Full sync operation (pull then push)
 async function performSync() {
-  console.log('Starting sync operation...');
-
   // Debug current state
   await debugSyncStorage();
 
@@ -377,9 +331,49 @@ if (isServiceWorker) {
   window.loopsSync = loopsSync;
 }
 
+// Check for possible GitHub data recovery on startup
+async function checkInitialRecovery() {
+  try {
+    // Wait a moment for any initial Chrome sync to complete
+    setTimeout(async () => {
+      const stored = await chrome.storage.local.get(['loopsSettings', 'readLater', 'tasks']);
+      const settings = stored.loopsSettings;
+
+      // Check if we have GitHub settings but no local data (fresh install scenario)
+      if (
+        settings?.githubSync?.enabled &&
+        settings?.githubSync?.token &&
+        settings?.githubSync?.gistId
+      ) {
+        const hasLocalData = stored.readLater?.length > 0 || stored.tasks?.length > 0;
+
+        if (!hasLocalData) {
+          // Fresh install detected with GitHub settings - attempting data recovery
+          try {
+            if (globalContext.GitHubSync) {
+              const githubSync = new globalContext.GitHubSync();
+              await githubSync.init(settings);
+              await githubSync.pullFromGitHub();
+
+              // Data recovery completed (may have recovered items)
+            }
+          } catch (error) {
+            console.error('Startup recovery failed:', error);
+          }
+        }
+      }
+    }, 3000); // Wait 3 seconds for Chrome sync to potentially complete
+  } catch (error) {
+    console.error('Initial recovery check failed:', error);
+  }
+}
+
 // Start auto-sync when script loads
 if (SYNC_CONFIG.enabled) {
   startAutoSync();
 }
 
-console.log('Loops sync module loaded');
+// Check for initial recovery needs
+checkInitialRecovery();
+
+// Loops sync module loaded

@@ -305,13 +305,64 @@
       .hidden {
         display: none;
       }
+
+      .sticky-save {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .sticky-save.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .auto-save-indicator {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #10b981;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+        z-index: 1000;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .auto-save-indicator.show {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
+    <!-- Sticky save button (shows when changes are made) -->
+    <button class="btn btn-primary sticky-save" id="stickySaveBtn">💾 Save Changes</button>
+
+    <!-- Auto-save indicator -->
+    <div class="auto-save-indicator" id="autoSaveIndicator">✓ Settings saved automatically</div>
+
     <div class="header">
       <div class="container">
-        <h1>⚙️ Loops Settings</h1>
-        <p>Configure sync, backup, and extension preferences</p>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+          "
+        >
+          <h1 style="margin-bottom: 0">⚙️ Loops Settings</h1>
+          <button class="btn btn-secondary" id="backToDashboard">← Back to Dashboard</button>
+        </div>
+        <p style="margin-bottom: 0">Configure sync, backup, and extension preferences</p>
       </div>
     </div>
 
@@ -343,7 +394,8 @@
               <label for="chromeEnabled">Enable Chrome Sync</label>
             </div>
             <p class="help-text">
-              Automatically syncs your most recent items across Chrome browsers. No setup required.
+              Syncs recent items <strong>and extension settings</strong> across Chrome browsers.
+              This is how your GitHub tokens sync between devices. No setup required.
             </p>
           </div>
         </div>
@@ -386,6 +438,11 @@
                 <label for="githubPublic">Create public gists (visible to everyone)</label>
               </div>
               <p class="help-text">
+                <strong>⚠️ Security Note:</strong> GitHub sync only stores your saved tabs, never
+                settings or tokens. Settings sync via Chrome Storage Sync when you're signed into
+                the same Google account.
+              </p>
+              <p class="help-text">
                 Private gists are only visible to you. Public gists can be shared with others.
               </p>
             </div>
@@ -396,6 +453,25 @@
                 id="githubDescription"
                 value="Loops Browser Extension - Saved Tabs"
               />
+            </div>
+            <div class="form-group">
+              <label for="githubGistId">Reconnect to Existing Gist (optional)</label>
+              <div style="display: flex; gap: 0.5rem; align-items: flex-start">
+                <input
+                  type="text"
+                  id="githubGistId"
+                  placeholder="Paste gist ID or URL to reconnect to existing data"
+                  style="flex: 1"
+                />
+                <button class="btn btn-success" id="reconnectSync" disabled>
+                  🔄 Reconnect & Sync Now
+                </button>
+              </div>
+              <p class="help-text">
+                If you have an existing gist with your data, paste the gist ID (e.g.,
+                "04e60cd76acf657a0020b27edb98c402") or full URL here, then click "Reconnect & Sync
+                Now" to immediately recover your saved tabs.
+              </p>
             </div>
           </div>
         </div>
@@ -435,17 +511,11 @@
         </div>
 
         <div class="form-group">
-          <label for="maxItems">Chrome Sync - Max Items per List</label>
-          <input type="number" id="maxItems" value="50" min="10" max="100" />
-          <p class="help-text">
-            Number of recent items to sync via Chrome (10-100). Lower numbers use less storage.
-          </p>
-        </div>
-
-        <div class="form-group">
           <div class="checkbox-group">
             <input type="checkbox" id="confirmDelete" checked />
-            <label for="confirmDelete">Confirm before bulk delete operations</label>
+            <label for="confirmDelete"
+              >Ask for confirmation before deleting multiple items at once</label
+            >
           </div>
         </div>
 
@@ -467,6 +537,13 @@
           <button class="btn btn-warning" id="exportSettings">📤 Export Settings</button>
           <button class="btn btn-secondary" id="importSettings">📥 Import Settings</button>
         </div>
+
+        <p class="help-text">
+          <strong>💡 Export/Import Use Cases:</strong><br />
+          • Copy settings between work and personal Google accounts<br />
+          • Backup settings when Chrome sync isn't working<br />
+          • Transfer settings to different devices
+        </p>
 
         <div id="saveStatus" class="status success hidden">✓ Settings saved successfully!</div>
       </div>

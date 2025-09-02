@@ -109,6 +109,9 @@ class GitHubSync {
         deviceId: await this.getDeviceId(),
       };
 
+      // Security check: ensure no sensitive data is being uploaded
+      this.validateGistSecurity(gistData);
+
       const gistContent = {
         'loops-data.json': {
           content: JSON.stringify(gistData, null, 2),
@@ -165,7 +168,7 @@ class GitHubSync {
         await this.saveSettings();
       }
 
-      console.log('Data pushed to GitHub Gist:', gist.html_url);
+      // Data pushed to GitHub Gist successfully
 
       return {
         success: true,
@@ -222,7 +225,7 @@ class GitHubSync {
       // Save merged data
       await chrome.storage.local.set(merged);
 
-      console.log('Data pulled from GitHub Gist and merged');
+      // Data pulled from GitHub Gist and merged
 
       return {
         success: true,
@@ -238,7 +241,7 @@ class GitHubSync {
 
   // Full sync operation
   async performSync() {
-    console.log('Starting GitHub sync...');
+    // Starting GitHub sync
 
     // First pull to get any changes
     const pullResult = await this.pullFromGitHub();
@@ -324,6 +327,32 @@ Loops helps you manage browser tabs by saving them to organized lists instead of
 *This gist is automatically managed by the Loops extension. Do not edit manually.*`;
   }
 
+  // Security validation: ensure no sensitive data is included in gist
+  validateGistSecurity(gistData) {
+    const sensitiveKeys = ['token', 'password', 'key', 'secret', 'credential', 'auth'];
+    const dataString = JSON.stringify(gistData).toLowerCase();
+
+    // Check for sensitive key names
+    const foundSensitive = sensitiveKeys.find((key) => dataString.includes(`"${key}"`));
+    if (foundSensitive) {
+      throw new Error(
+        `Security violation: Attempt to upload sensitive data containing "${foundSensitive}" to GitHub gist`
+      );
+    }
+
+    // Additional check for GitHub token patterns (ghp_, github_pat_)
+    if (dataString.includes('ghp_') || dataString.includes('github_pat_')) {
+      throw new Error('Security violation: Attempt to upload GitHub token to gist');
+    }
+
+    // Check for settings object
+    if (gistData.settings || gistData.loopsSettings) {
+      throw new Error('Security violation: Attempt to upload settings to GitHub gist');
+    }
+
+    // Security validation passed - no sensitive data detected
+  }
+
   // Get or create device ID
   async getDeviceId() {
     const result = await chrome.storage.local.get(['deviceId']);
@@ -376,4 +405,4 @@ const isGitHubServiceWorker = typeof window === 'undefined';
 const gitHubGlobalContext = isGitHubServiceWorker ? self : window;
 gitHubGlobalContext.GitHubSync = GitHubSync;
 
-console.log('GitHub sync module loaded');
+// GitHub sync module loaded
