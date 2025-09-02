@@ -53,34 +53,29 @@ Open source and built for productivity enthusiasts who want to tame their tab ch
 
 ## Screenshots Needed
 
-📸 **Screenshot 1: Main Dashboard**
+📸 **Screenshot 1: Main Dashboard** ✅
 
-- Show the dashboard with saved tabs in both "Read Later" and "Tasks" lists
-- Highlight the clean, modern interface
-- Include some sample saved items with favicons
+- Shows the dashboard with saved tabs in both "Read Later" and "Tasks" lists
+- Highlights the clean, modern interface
+- Includes sample saved items with favicons
 
-📸 **Screenshot 2: Quick Save Popup**
+📸 **Screenshot 2: Note-Taking Dialog** ✅
 
-- Show the popup interface when pressing Alt+R or Alt+T
-- Demonstrate the quick save functionality
-- Show the "Add Note" option
+- Shows the note dialog when adding context to saved tabs
+- Demonstrates the Alt+Shift+R functionality for adding notes
+- Highlights the "keep context" part of the value proposition
 
-📸 **Screenshot 3: Options/Settings Page**
+📸 **Screenshot 3: Tab Manager View** ✅
 
-- Display the sync configuration options
-- Show Chrome Sync and GitHub Gists setup
-- Highlight the auto-save functionality
+- Shows the tab manager interface with bulk operations
+- Demonstrates smart organization (32 tabs, 1 duplicate, 21 inactive)
+- Highlights bulk action buttons and cleanup features
 
-📸 **Screenshot 4: Tab Manager View**
+📸 **Screenshot 4: Options/Settings Page** ✅
 
-- Show the tab manager interface
-- Demonstrate bulk operations
-- Show the organizational features
-
-📸 **Screenshot 5: Adding Notes (Optional)**
-
-- Show the note-taking dialog
-- Demonstrate adding context to saved tabs
+- Displays sync configuration options (Chrome Sync, GitHub Gists)
+- Shows active connection statuses
+- Highlights the auto-save functionality and cross-device sync
 
 ## Icon & Assets
 
