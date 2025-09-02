@@ -439,3 +439,14 @@ loadList('readLater');
 
 // Update sync status periodically
 setInterval(updateSyncStatus, 30000); // Every 30 seconds
+
+// Periodic refresh to keep data fresh
+setInterval(
+  () => {
+    // Only refresh if the tab is visible (don't waste resources on background tabs)
+    if (!document.hidden) {
+      loadList(currentList);
+    }
+  },
+  5 * 60 * 1000
+); // Every 5 minutes
