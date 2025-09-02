@@ -17,10 +17,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Get version from manifest
+    - name: Get version from git tag
       id: version
       run: |
-        VERSION=$(grep '"version"' manifest.json | sed 's/.*"version": "\(.*\)".*/\1/')
+        VERSION=${GITHUB_REF#refs/tags/v}
         echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
         echo "Building version ${VERSION}"
     
