@@ -660,6 +660,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     showAutoSaveIndicator();
   });
 
+  // Configure shortcuts button
+  document.getElementById('configureShortcuts').addEventListener('click', () => {
+    // Open Chrome's extension shortcuts page
+    chrome.tabs.create({
+      url: 'chrome://extensions/shortcuts',
+    });
+  });
+
   // Warn about unsaved changes when leaving
   window.addEventListener('beforeunload', (e) => {
     if (hasUnsavedChanges) {

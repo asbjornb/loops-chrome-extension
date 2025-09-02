@@ -28,26 +28,28 @@ Loops extends Chrome's built-in tab management shortcuts with smart saving capab
 | `Ctrl+Shift+Tab` - Previous tab | `Alt+Shift+R` - Save to Read Later with note |
 | `Ctrl+Shift+A` - Search tabs    | `Alt+Shift+T` - Save to Tasks with note      |
 
-### Default Loops Shortcuts (Pre-configured)
+### Default Loops Shortcuts
 
-| Shortcut      | Action                                             |
-| ------------- | -------------------------------------------------- |
-| `Alt+R`       | Save current tab to Read Later list (and close it) |
-| `Alt+T`       | Save current tab to Tasks list (and close it)      |
-| `Alt+Shift+R` | Save to Read Later with a custom note              |
-| `Alt+Shift+T` | Save to Tasks with a custom note                   |
+| Shortcut      | Action                                             | Status            |
+| ------------- | -------------------------------------------------- | ----------------- |
+| `Alt+R`       | Save current tab to Read Later list (and close it) | ✅ Auto-works     |
+| `Alt+T`       | Save current tab to Tasks list (and close it)      | ✅ Auto-works     |
+| `Alt+Shift+R` | Save to Read Later with a custom note              | ⚠️ Manual setup\* |
+| `Alt+Shift+T` | Save to Tasks with a custom note                   | ⚠️ Manual setup\* |
+
+**\* Alt+Shift shortcuts need manual configuration:**
+
+1. Go to `chrome://extensions/shortcuts`
+2. Find "Loops - Close tabs, keep context"
+3. Set shortcuts for "Save to Read Later with note" and "Save to Tasks with note"
+4. Chrome blocks Alt+Shift by default due to OS conflicts (e.g., language switching)
 
 ### Additional Commands (Configure Manually)
 
 The extension popup can be opened with a custom shortcut:
 
-1. Go to `chrome://extensions/shortcuts`
-2. Find "Loops" and set a shortcut for **"Activate the extension"** (e.g., `Alt+E`)
-
-**Notes:**
-
-- If `Alt+Shift+T` doesn't work, it may conflict with another extension. You can reassign it in `chrome://extensions/shortcuts`
-- To close tabs, just use Chrome's built-in `Ctrl+W` shortcut
+1. In `chrome://extensions/shortcuts`, find "Loops"
+2. Set a shortcut for **"Activate the extension"** (e.g., `Alt+E` or `Ctrl+Shift+L`)
 
 ## Getting Started
 
