@@ -17,21 +17,21 @@ Manage tabs better by saving them to Read Later or Task lists. Quick save with A
 ## Detailed Description
 
 ```
-Ever opened Chrome and realized you've got 47 tabs across 4 windows, half of them duplicates, most of them things you swear you'll "definitely read this weekend"? Yeah, we've all been there.
+Ever opened Chrome and realized you've got 144 tabs across 13 windows, half of them duplicates, most of them things you swear you'll "definitely read this weekend"? I've been there. If you haven't I honestly don't think you need this.
 
-Built-in Ctrl+Shift+A is nice, but I still ended up opening the same Stack Overflow answer, documentation page, or "urgent" Slack thread 3 times because I couldn't remember which window it was hiding in (spoiler: it wasn't open at all).
+Chrome's built-in Ctrl+Shift+a is nice, but I still ended up opening the same Stack Overflow answer, documentation page, or "urgent" Slack thread 3 times because I couldn't remember which window it was hiding in or if it was open at all.
 
-That's why I built Loops—a lightweight tab manager that finally let me drop from 82 tabs to just 12 (bonus: the badge turns a satisfying green when you reach peak productivity zen 🧘‍♂️).
+That's why I built Loops—a lightweight tab manager that finally let me drop from 144 tabs to just 24 in minutes as soon as I tried it (bonus: the badge turns a satisfying green when you get below 25 🧘‍♂️).
 
 ✨ What Loops Does for Your Tab Addiction
 
 **Save instantly with shortcuts:**
 • Alt+R → "Read Later" (for that blog post you'll totally read)
-• Alt+T → "Tasks" (for things that actually matter)
+• Alt+T → "Tasks" (for things that you really will take action on)
 
-**Add context with quick notes** (so future-you remembers why you saved "localhost:3000" at 2 AM)
+**Add context with quick notes [Alt+Shift+R/T]** (so future-you remembers why you saved "localhost:3000" at 2 AM)
 
-**Find duplicates & group by domain** to realize you had 6 GitHub tabs open (again)
+**Find duplicates & group by domain** to realize you had 15 GitHub tabs open (again)
 
 **Cross-device sync** via Chrome or GitHub Gists (your accounts, your data, your chaos)
 
