@@ -105,5 +105,3 @@ See [PRIVACY-POLICY.md](PRIVACY-POLICY.md) - emphasizes local-first approach and
 - `scripting`: Inject minimal scripts for keyboard shortcuts
 
 ---
-
-_Ready for submission once screenshots are added!_
