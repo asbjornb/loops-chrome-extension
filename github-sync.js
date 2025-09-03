@@ -23,6 +23,11 @@ class GitHubSync {
           Accept: 'application/vnd.github.v3+json',
           'User-Agent': 'Loops-Extension',
         },
+      }).catch((error) => {
+        console.error('GitHub user info fetch failed:', error.message);
+        throw new Error(
+          `Failed to connect to GitHub: ${error.message}. Check your internet connection.`
+        );
       });
 
       if (!userResponse.ok) {

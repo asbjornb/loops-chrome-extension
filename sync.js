@@ -201,11 +201,20 @@ async function checkChromeSync() {
       await chrome.storage.sync.remove(testKey);
       return true;
     } else {
-      console.error('Chrome sync storage test failed');
+      console.warn('⚠️ Chrome sync storage test failed - data mismatch:', {
+        expected: testValue,
+        received: result[testKey],
+      });
       return false;
     }
   } catch (error) {
-    console.error('Chrome sync not available:', error.message);
+    console.error('❌ Chrome sync not available:', error.message);
+    // More specific error messages
+    if (error.message.includes('QUOTA_BYTES')) {
+      console.error('Chrome sync quota exceeded. Clear some data or disable sync temporarily.');
+    } else if (error.message.includes('MAX_ITEMS')) {
+      console.error('Too many items in Chrome sync. Consider cleaning up old data.');
+    }
     return false;
   }
 }
