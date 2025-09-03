@@ -147,7 +147,7 @@ async function pullFromSync() {
         // Attempting automatic GitHub data recovery
         setTimeout(async () => {
           try {
-            const githubSync = new globalContext.GitHubSync();
+            const githubSync = new self.GitHubSync();
             await githubSync.init(merged.loopsSettings);
             await githubSync.pullFromGitHub();
 
@@ -350,8 +350,8 @@ async function checkInitialRecovery() {
         if (!hasLocalData) {
           // Fresh install detected with GitHub settings - attempting data recovery
           try {
-            if (globalContext.GitHubSync) {
-              const githubSync = new globalContext.GitHubSync();
+            if (self.GitHubSync) {
+              const githubSync = new self.GitHubSync();
               await githubSync.init(settings);
               await githubSync.pullFromGitHub();
 
