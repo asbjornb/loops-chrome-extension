@@ -111,6 +111,9 @@ function updateSettingsFromUI() {
       gistId = gistMatch[1];
     }
     settings.githubSync.gistId = gistId;
+  } else if (!gistId && settings.githubSync.gistId) {
+    // Preserve existing gistId if field is empty but we already have one saved
+    // This happens during auto-save when the field isn't shown
   }
 
   settings.githubSync.enabled = !!settings.githubSync.token;
@@ -161,8 +164,8 @@ async function updateSyncStatus() {
       githubStatus.className = 'status success';
       githubStatus.textContent = '✓ Connected';
     } else {
-      githubStatus.className = 'status warning';
-      githubStatus.textContent = '⚠️ Token set, no gist';
+      githubStatus.className = 'status info';
+      githubStatus.textContent = '🔄 Creating gist...';
     }
   } else {
     githubStatus.className = 'status warning';
@@ -214,21 +217,36 @@ async function connectGitHub() {
       throw new Error(result.error);
     }
 
-    // Update settings
+    // Update settings first
     updateSettingsFromUI();
     settings.githubSync.token = token;
     settings.githubSync.enabled = true;
 
-    await saveSettings();
+    // Initialize GitHub sync
+    await githubSync.init(settings);
 
-    showStatus(`✅ Connected to GitHub as ${result.user.login} with gist permissions!`, 'success');
-
-    // If a gist ID was provided, try to pull data from it
-    if (settings.githubSync.gistId) {
+    // If no gist ID exists, create one
+    if (!settings.githubSync.gistId) {
+      try {
+        // Create a new gist for syncing
+        const syncResult = await githubSync.performSync();
+        
+        // Get the gist ID that was created
+        const updatedSettings = await chrome.storage.local.get(['loopsSettings']);
+        if (updatedSettings.loopsSettings?.githubSync?.gistId) {
+          settings.githubSync.gistId = updatedSettings.loopsSettings.githubSync.gistId;
+          document.getElementById('githubGistId').value = settings.githubSync.gistId;
+        }
+        
+        showStatus(`✅ Connected to GitHub as ${result.user.login} and created sync gist!`, 'success');
+      } catch (error) {
+        console.error('Failed to create gist:', error);
+        showStatus(`Connected to GitHub, but failed to create gist: ${error.message}`, 'warning');
+      }
+    } else {
+      // If a gist ID was provided, try to pull data from it
       try {
         // Attempting data recovery from existing gist
-        const githubSync = new window.GitHubSync();
-        await githubSync.init(settings);
         const pullResult = await githubSync.pullFromGitHub();
 
         if (pullResult.success && pullResult.merged) {
@@ -236,12 +254,17 @@ async function connectGitHub() {
             `✅ Connected and recovered ${pullResult.itemsMerged} items from existing gist!`,
             'success'
           );
+        } else {
+          showStatus(`✅ Connected to GitHub as ${result.user.login}!`, 'success');
         }
       } catch (error) {
         console.error('Failed to recover data from gist:', error);
         showStatus(`Connected to GitHub, but failed to recover data: ${error.message}`, 'warning');
       }
     }
+
+    // Save settings with potentially updated gist ID
+    await saveSettings();
 
     updateSyncStatus();
     updateProviderStates();
