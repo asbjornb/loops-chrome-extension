@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS = {
   // General settings
   confirmDelete: true,
   autoClose: true,
+  inactiveTabThreshold: 8, // Hours before considering a tab inactive
 
   // UI settings
   theme: 'light', // For future dark mode
@@ -89,6 +90,7 @@ function updateUI() {
   // General settings
   document.getElementById('confirmDelete').checked = settings.confirmDelete;
   document.getElementById('autoClose').checked = settings.autoClose;
+  document.getElementById('inactiveTabThreshold').value = settings.inactiveTabThreshold;
   
   // UI settings
   document.getElementById('showShortcuts').checked = settings.showShortcuts;
@@ -124,6 +126,7 @@ function updateSettingsFromUI() {
 
   settings.confirmDelete = document.getElementById('confirmDelete').checked;
   settings.autoClose = document.getElementById('autoClose').checked;
+  settings.inactiveTabThreshold = parseInt(document.getElementById('inactiveTabThreshold').value);
   settings.showShortcuts = document.getElementById('showShortcuts').checked;
 }
 
@@ -652,6 +655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     'githubGistId',
     'confirmDelete',
     'autoClose',
+    'inactiveTabThreshold',
     'showShortcuts',
   ];
 

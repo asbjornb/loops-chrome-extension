@@ -7,8 +7,29 @@ const tabGroupsContainer = document.getElementById('tabGroups');
 const bulkActions = document.getElementById('bulkActions');
 const selectedCount = document.getElementById('selectedCount');
 
+// Update threshold display
+async function updateThresholdDisplay() {
+  let thresholdHours = 8; // default
+  try {
+    const stored = await chrome.storage.local.get(['loopsSettings']);
+    const settings = stored.loopsSettings || {};
+    thresholdHours = settings.inactiveTabThreshold || 8;
+  } catch (error) {
+    console.error('Failed to load inactive threshold setting:', error);
+  }
+
+  const thresholdDisplay = document.getElementById('inactiveThresholdDisplay');
+  if (thresholdDisplay) {
+    const displayText = thresholdHours >= 24 
+      ? `(${Math.floor(thresholdHours / 24)}d+)`
+      : `(${thresholdHours}h+)`;
+    thresholdDisplay.textContent = displayText;
+  }
+}
+
 // Initialize
 loadTabs();
+updateThresholdDisplay();
 
 // Load and analyze all tabs
 async function loadTabs() {
@@ -508,19 +529,41 @@ document.getElementById('saveAllSuggested').addEventListener('click', async () =
 });
 
 document.getElementById('closeInactive').addEventListener('click', async () => {
+  // Get user's inactive threshold setting
+  let thresholdHours = 8; // default
+  try {
+    const stored = await chrome.storage.local.get(['loopsSettings']);
+    const settings = stored.loopsSettings || {};
+    thresholdHours = settings.inactiveTabThreshold || 8;
+  } catch (error) {
+    console.error('Failed to load inactive threshold setting:', error);
+  }
+
+  const thresholdMs = thresholdHours * 60 * 60 * 1000;
   const inactiveTabs = allTabs.filter(
-    (tab) => tab.lastAccessed && Date.now() - tab.lastAccessed > 2 * 60 * 60 * 1000
+    (tab) => tab.lastAccessed && Date.now() - tab.lastAccessed > thresholdMs
   );
 
-  if (inactiveTabs.length > 0 && confirm(`Close ${inactiveTabs.length} inactive tabs?`)) {
-    const tabIds = inactiveTabs.map((t) => t.id);
-    try {
-      await chrome.tabs.remove(tabIds);
-    } catch (error) {
-      console.warn('Some tabs could not be closed (may already be closed):', error);
+  if (inactiveTabs.length > 0) {
+    const thresholdText = thresholdHours >= 24 
+      ? `${Math.floor(thresholdHours / 24)} day${Math.floor(thresholdHours / 24) > 1 ? 's' : ''}`
+      : `${thresholdHours} hour${thresholdHours > 1 ? 's' : ''}`;
+    
+    if (confirm(`Close ${inactiveTabs.length} tabs that haven't been accessed in over ${thresholdText}?\n\nYou can change this threshold in Options.`)) {
+      const tabIds = inactiveTabs.map((t) => t.id);
+      try {
+        await chrome.tabs.remove(tabIds);
+      } catch (error) {
+        console.warn('Some tabs could not be closed (may already be closed):', error);
+      }
+      selectedTabs.clear();
+      loadTabs();
     }
-    selectedTabs.clear();
-    loadTabs();
+  } else {
+    const thresholdText = thresholdHours >= 24 
+      ? `${Math.floor(thresholdHours / 24)} day${Math.floor(thresholdHours / 24) > 1 ? 's' : ''}`
+      : `${thresholdHours} hour${thresholdHours > 1 ? 's' : ''}`;
+    alert(`No tabs found that haven't been accessed in over ${thresholdText}.\n\nYou can adjust this threshold in Options.`);
   }
 });
 
