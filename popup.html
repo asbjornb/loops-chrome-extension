@@ -146,7 +146,7 @@
       }
       .clear-btn:hover {
         background: #f9fafb;
-        color: #ef4444;
+        color: #4f46e5;
       }
       .view-all-btn {
         width: 100%;
@@ -214,6 +214,14 @@
     </div>
 
     <div class="tabs-container">
+      <button
+        id="manageTabsBtn"
+        class="view-all-btn"
+        style="background: #10b981; border-color: #10b981; margin-bottom: 12px"
+      >
+        🗂️ Manage Tabs
+      </button>
+      
       <div class="tabs">
         <button class="tab-button active" data-list="readLater">
           Read Later <span class="count" id="readLaterCount">0</span>
@@ -230,14 +238,10 @@
       <div id="moreItems" class="more-items" style="display: none"></div>
 
       <button id="viewAllBtn" class="view-all-btn">View All & Search</button>
-      <button
-        id="manageTabsBtn"
-        class="view-all-btn"
-        style="background: #10b981; border-color: #10b981"
-      >
-        🗂️ Manage Tabs
+      
+      <button id="optionsBtn" class="clear-btn" style="margin-top: 8px">
+        ⚙️ Options
       </button>
-      <button id="clearBtn" class="clear-btn" style="display: none">Clear All</button>
     </div>
 
     <script src="popup.js"></script>

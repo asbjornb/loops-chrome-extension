@@ -76,13 +76,7 @@ async function deleteItem(listName, itemId) {
   await chrome.storage.local.set({ [listName]: filtered });
 }
 
-// Clear all items in current list
-async function clearCurrentList() {
-  if (confirm(`Clear all items in ${currentList === 'readLater' ? 'Read Later' : 'Tasks'}?`)) {
-    await chrome.storage.local.set({ [currentList]: [] });
-    loadList(currentList);
-  }
-}
+// Clear all functionality removed - users can manage items through dashboard
 
 // Format time helper
 function formatTime(isoString) {
@@ -110,12 +104,7 @@ async function updateCounts() {
   document.getElementById('readLaterCount').textContent = readLaterCount;
   document.getElementById('tasksCount').textContent = tasksCount;
 
-  // Show/hide clear button
-  const clearBtn = document.getElementById('clearBtn');
-  if (clearBtn) {
-    const currentCount = currentList === 'readLater' ? readLaterCount : tasksCount;
-    clearBtn.style.display = currentCount > 0 ? 'block' : 'none';
-  }
+  // Clear button functionality removed for better UX
 }
 
 // Tab switching
@@ -141,12 +130,9 @@ document.getElementById('manageTabsBtn').addEventListener('click', () => {
   chrome.tabs.create({ url: chrome.runtime.getURL('tab-manager.html') });
 });
 
-// Clear button handler
-document.addEventListener('DOMContentLoaded', () => {
-  const clearBtn = document.getElementById('clearBtn');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', clearCurrentList);
-  }
+// Options button handler  
+document.getElementById('optionsBtn').addEventListener('click', () => {
+  chrome.runtime.openOptionsPage();
 });
 
 // Initial load
