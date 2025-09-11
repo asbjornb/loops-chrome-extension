@@ -25,17 +25,17 @@ That's why I built Loops—a lightweight tab manager that finally let me drop fr
 
 ✨ What Loops Does for Your Tab Addiction
 
-**Save instantly with shortcuts:**
+💾 Save instantly with shortcuts:
 • Alt+R → "Read Later" (for that blog post you'll totally read)
 • Alt+T → "Tasks" (for things that you really will take action on)
 
-**Add context with quick notes [Alt+Shift+R/T]** (so future-you remembers why you saved "localhost:3000" at 2 AM)
+📝 Add context with quick notes [Alt+Shift+R/T] (so future-you remembers why you saved "localhost:3000" at 2 AM)
 
-**Find duplicates & group by domain** to realize you had 15 GitHub tabs open (again)
+🔍 Find duplicates & group by domain to realize you had 15 GitHub tabs open (again)
 
-**Cross-device sync** via Chrome or GitHub Gists (your accounts, your data, your chaos)
+☁️ Cross-device sync via Chrome or GitHub Gists (your accounts, your data, your chaos)
 
-**Clean dashboard** with bulk actions, search, and the sweet satisfaction of hitting "Delete All"
+🧹 Clean Lists page with bulk actions, search, and the sweet satisfaction of hitting "Delete All"
 
 💡 Why It's Different
 
@@ -58,11 +58,11 @@ Open source. Built by a reformed tab hoarder. Powered by the existential dread o
 
 ## Screenshots
 
-### 📸 **Screenshot 1: Main Dashboard**
+### 📸 **Screenshot 1: Lists Page**
 
-![Main Dashboard](screenshots/screenshot_dashboard.png)
+![Lists Page](screenshots/screenshot_dashboard.png)
 
-Shows the dashboard with saved tabs in both "Read Later" and "Tasks" lists, highlighting the clean, modern interface with sample saved items and favicons.
+Shows the Lists page with saved tabs in both "Read Later" and "Tasks" lists, highlighting the clean, modern interface with sample saved items and favicons.
 
 ### 📸 **Screenshot 2: Note-Taking Dialog**
 
