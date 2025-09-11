@@ -597,11 +597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = chrome.runtime.getURL('dashboard.html');
   });
 
-  document.getElementById('backToDashboard').addEventListener('click', (e) => {
-    e.preventDefault();
-    // Use normal navigation instead of complex tab management
-    window.location.href = chrome.runtime.getURL('dashboard.html');
-  });
+  // Legacy back navigation removed - now using tab navigation
 
   // Auto-save functionality
   let autoSaveTimeout;

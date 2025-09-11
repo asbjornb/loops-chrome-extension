@@ -643,11 +643,7 @@ async function bulkSaveSelected(listName) {
   loadTabs();
 }
 
-// Navigation
-document.getElementById('backToDashboard').addEventListener('click', () => {
-  // Use normal navigation instead of opening new tab
-  window.location.href = chrome.runtime.getURL('dashboard.html');
-});
+// Legacy back navigation removed - now using tab navigation
 
 // Show error message
 function showError(message) {
