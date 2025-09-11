@@ -120,7 +120,7 @@ document.querySelectorAll('.tab-button').forEach((button) => {
   });
 });
 
-// View All button - opens dashboard
+// View All button - opens lists page
 document.getElementById('viewAllBtn').addEventListener('click', () => {
   chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
 });
