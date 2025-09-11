@@ -447,3 +447,26 @@ setInterval(() => {
     loadList(currentList);
   }
 }, 30 * 1000); // Every 30 seconds (same as sync status)
+
+// Navigation tab functionality
+function initNavigationTabs() {
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const page = tab.dataset.page;
+      switch (page) {
+        case 'dashboard':
+          // Already on dashboard, do nothing
+          break;
+        case 'manage-tabs':
+          window.location.href = chrome.runtime.getURL('tab-manager.html');
+          break;
+        case 'options':
+          window.location.href = chrome.runtime.getURL('options.html');
+          break;
+      }
+    });
+  });
+}
+
+// Initialize navigation tabs
+initNavigationTabs();

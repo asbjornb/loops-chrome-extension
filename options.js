@@ -693,4 +693,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+// Navigation tab functionality
+function initNavigationTabs() {
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const page = tab.dataset.page;
+      switch (page) {
+        case 'dashboard':
+          window.location.href = chrome.runtime.getURL('dashboard.html');
+          break;
+        case 'manage-tabs':
+          window.location.href = chrome.runtime.getURL('tab-manager.html');
+          break;
+        case 'options':
+          // Already on options, do nothing
+          break;
+      }
+    });
+  });
+}
+
+// Initialize navigation tabs
+initNavigationTabs();
+
 // Loops options page loaded

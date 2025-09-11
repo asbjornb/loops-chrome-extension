@@ -661,3 +661,26 @@ function showError(message) {
 }
 
 // Functions are now handled via event delegation, no need for global assignments
+
+// Navigation tab functionality
+function initNavigationTabs() {
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const page = tab.dataset.page;
+      switch (page) {
+        case 'dashboard':
+          window.location.href = chrome.runtime.getURL('dashboard.html');
+          break;
+        case 'manage-tabs':
+          // Already on manage tabs, do nothing
+          break;
+        case 'options':
+          window.location.href = chrome.runtime.getURL('options.html');
+          break;
+      }
+    });
+  });
+}
+
+// Initialize navigation tabs
+initNavigationTabs();

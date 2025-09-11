@@ -385,6 +385,49 @@
         right: 1rem;
         z-index: 100;
       }
+
+      /* Navigation Tabs */
+      .nav-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 0;
+      }
+
+      .nav-tab {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.75rem 1rem;
+        border-radius: 6px 6px 0 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.875rem;
+        font-weight: 500;
+        position: relative;
+      }
+
+      .nav-tab:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .nav-tab.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .nav-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: white;
+        border-radius: 1px;
+      }
     </style>
   </head>
   <body>
@@ -396,6 +439,13 @@
       <div class="container">
         <h1>🗂️ Tab Manager</h1>
         <p>Intelligently organize, clean up, and save your open tabs</p>
+        
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+          <button class="nav-tab" data-page="dashboard">📊 Dashboard</button>
+          <button class="nav-tab active" data-page="manage-tabs">🗂️ Manage Tabs</button>
+          <button class="nav-tab" data-page="options">⚙️ Options</button>
+        </div>
       </div>
     </div>
 
