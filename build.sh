@@ -17,6 +17,16 @@ if [ -f "$OUTPUT_FILE" ]; then
     echo "📦 Removed old build"
 fi
 
+# Create temporary manifest without the key field for store submission
+echo "🔧 Creating store-ready manifest (removing development key)"
+cp manifest.json manifest.json.backup
+# Remove the key field using sed (works without jq)
+sed '/"key":/d' manifest.json > manifest.json.store
+
+# Replace manifest temporarily
+mv manifest.json manifest.json.dev
+mv manifest.json.store manifest.json
+
 # Create the zip file, excluding development files
 zip -r "$OUTPUT_FILE" . \
     -x "*.git*" \
@@ -36,7 +46,16 @@ zip -r "$OUTPUT_FILE" . \
     -x "spec.md" \
     -x "*.log" \
     -x ".DS_Store" \
-    -x "Thumbs.db"
+    -x "Thumbs.db" \
+    -x "*.crx" \
+    -x "manifest.json.dev" \
+    -x "manifest.json.backup"
+
+# Restore original manifest
+mv manifest.json.dev manifest.json
+rm -f manifest.json.backup
+
+echo "🔄 Restored development manifest with key field"
 
 echo "✅ Build complete: $OUTPUT_FILE"
 echo "📊 File size: $(du -h "$OUTPUT_FILE" | cut -f1)"
