@@ -46,10 +46,10 @@ That's why I built Loops—a lightweight tab manager that finally let me drop fr
 
 🚀 Perfect For
 
-👩‍💻 Developers juggling GitHub, GitLab, localhost, and 47 documentation sites
-🎓 Students collecting "research" (aka procrastination material)
-🗂️ Anyone whose browser looks like a digital hoarder's paradise
-🤔 People who've ever said "I know I had that tab open somewhere..."
+• Developers juggling GitHub, GitLab, localhost, and 47 documentation sites
+• Students collecting "research" (aka procrastination material)
+• Anyone whose browser looks like a digital hoarder's paradise
+• People who've ever said "I know I had that tab open somewhere..."
 
 Open source. Built by a reformed tab hoarder. Powered by the existential dread of losing important tabs.
 
