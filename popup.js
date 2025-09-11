@@ -135,5 +135,27 @@ document.getElementById('optionsBtn').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
 
-// Initial load
-loadList(currentList);
+// Load settings and initialize
+async function initializePopup() {
+  // Load settings to check if shortcuts should be shown
+  try {
+    const stored = await chrome.storage.local.get(['loopsSettings']);
+    const settings = stored.loopsSettings || {};
+    
+    // Hide shortcuts section if setting is disabled
+    if (settings.showShortcuts === false) {
+      const shortcutsSection = document.querySelector('.shortcuts');
+      if (shortcutsSection) {
+        shortcutsSection.style.display = 'none';
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+  }
+  
+  // Load the current list
+  loadList(currentList);
+}
+
+// Initialize popup
+initializePopup();

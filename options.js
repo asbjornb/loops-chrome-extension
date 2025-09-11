@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS = {
 
   // UI settings
   theme: 'light', // For future dark mode
+  showShortcuts: true, // Show keyboard shortcuts in popup
 };
 
 // Load settings on page load
@@ -88,6 +89,9 @@ function updateUI() {
   // General settings
   document.getElementById('confirmDelete').checked = settings.confirmDelete;
   document.getElementById('autoClose').checked = settings.autoClose;
+  
+  // UI settings
+  document.getElementById('showShortcuts').checked = settings.showShortcuts;
 
   // Update provider states
   updateProviderStates();
@@ -120,6 +124,7 @@ function updateSettingsFromUI() {
 
   settings.confirmDelete = document.getElementById('confirmDelete').checked;
   settings.autoClose = document.getElementById('autoClose').checked;
+  settings.showShortcuts = document.getElementById('showShortcuts').checked;
 }
 
 // Update visual state of sync providers
@@ -647,6 +652,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     'githubGistId',
     'confirmDelete',
     'autoClose',
+    'showShortcuts',
   ];
 
   formElements.forEach((id) => {
