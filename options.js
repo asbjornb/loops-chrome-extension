@@ -585,32 +585,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Dashboard links
   document.getElementById('openDashboard').addEventListener('click', (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+    // Use normal navigation instead of opening new tab
+    window.location.href = chrome.runtime.getURL('dashboard.html');
   });
 
   document.getElementById('backToDashboard').addEventListener('click', (e) => {
     e.preventDefault();
-    // Try to go back to dashboard tab if it exists, otherwise create new one
-    chrome.tabs.query({ url: chrome.runtime.getURL('dashboard.html') }, (tabs) => {
-      if (tabs.length > 0) {
-        // Dashboard tab exists, switch to it
-        chrome.tabs.update(tabs[0].id, { active: true });
-        chrome.tabs.getCurrent((currentTab) => {
-          if (currentTab) {
-            chrome.tabs.remove(currentTab.id);
-          }
-        });
-      } else {
-        // No dashboard tab, create new one and close current
-        chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') }, () => {
-          chrome.tabs.getCurrent((currentTab) => {
-            if (currentTab) {
-              chrome.tabs.remove(currentTab.id);
-            }
-          });
-        });
-      }
-    });
+    // Use normal navigation instead of complex tab management
+    window.location.href = chrome.runtime.getURL('dashboard.html');
   });
 
   // Auto-save functionality

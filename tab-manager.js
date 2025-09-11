@@ -602,7 +602,8 @@ async function bulkSaveSelected(listName) {
 
 // Navigation
 document.getElementById('backToDashboard').addEventListener('click', () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+  // Use normal navigation instead of opening new tab
+  window.location.href = chrome.runtime.getURL('dashboard.html');
 });
 
 // Show error message
