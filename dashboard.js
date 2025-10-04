@@ -10,6 +10,7 @@ const emptyState = document.getElementById('emptyState');
 const bulkActions = document.getElementById('bulkActions');
 const selectedCount = document.getElementById('selectedCount');
 const clearAllBtn = document.getElementById('clearAllBtn');
+const { formatRelativeTime } = window.loopsUtils;
 
 // Load and display items
 async function loadList(listName) {
@@ -76,7 +77,7 @@ function renderItems() {
         ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
       </div>
       <div class="item-meta">
-        <div class="item-time">${formatTime(item.savedAt)}</div>
+        <div class="item-time">${formatRelativeTime(item.savedAt)}</div>
         <div class="item-actions">
           <button class="action-btn action-btn-delete" data-id="${item.id}" title="Delete">
             🗑️
@@ -177,28 +178,6 @@ async function updateCounts() {
 // Update clear all button visibility
 function updateClearButton() {
   clearAllBtn.style.display = allItems.length > 0 ? 'block' : 'none';
-}
-
-// Format time helper
-function formatTime(isoString) {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diff = now - date;
-
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  const weeks = Math.floor(days / 7);
-  const months = Math.floor(days / 30);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  if (weeks < 4) return `${weeks}w ago`;
-  if (months < 12) return `${months}mo ago`;
-
-  return date.toLocaleDateString();
 }
 
 // Export functionality
@@ -450,7 +429,7 @@ setInterval(() => {
 
 // Navigation tab functionality
 function initNavigationTabs() {
-  document.querySelectorAll('.nav-tab').forEach(tab => {
+  document.querySelectorAll('.nav-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
       const page = tab.dataset.page;
       switch (page) {

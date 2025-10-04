@@ -1,4 +1,5 @@
 let currentList = 'readLater';
+const { formatRelativeTime } = window.loopsUtils;
 
 // Load and display list (limited to 5 items for popup)
 async function loadList(listName) {
@@ -24,7 +25,7 @@ async function loadList(listName) {
         <div class="list-item-content">
           <div class="list-item-title">${item.title || 'Untitled'}</div>
           ${item.note ? `<div class="list-item-note">${item.note}</div>` : ''}
-          <div class="list-item-time">${formatTime(item.savedAt)}</div>
+          <div class="list-item-time">${formatRelativeTime(item.savedAt)}</div>
         </div>
         <button class="delete-btn" data-id="${item.id}" title="Delete">×</button>
       </div>
@@ -78,22 +79,6 @@ async function deleteItem(listName, itemId) {
 
 // Clear all functionality removed - users can manage items through dashboard
 
-// Format time helper
-function formatTime(isoString) {
-  const date = new Date(isoString);
-  const now = new Date();
-  const diff = now - date;
-
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-}
-
 // Update counts for both lists
 async function updateCounts() {
   const storage = await chrome.storage.local.get(['readLater', 'tasks']);
@@ -130,7 +115,7 @@ document.getElementById('manageTabsBtn').addEventListener('click', () => {
   chrome.tabs.create({ url: chrome.runtime.getURL('tab-manager.html') });
 });
 
-// Options button handler  
+// Options button handler
 document.getElementById('optionsBtn').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
@@ -141,7 +126,7 @@ async function initializePopup() {
   try {
     const stored = await chrome.storage.local.get(['loopsSettings']);
     const settings = stored.loopsSettings || {};
-    
+
     // Hide shortcuts section if setting is disabled
     if (settings.showShortcuts === false) {
       const shortcutsSection = document.querySelector('.shortcuts');
@@ -152,7 +137,7 @@ async function initializePopup() {
   } catch (error) {
     console.error('Failed to load settings:', error);
   }
-  
+
   // Load the current list
   loadList(currentList);
 }
