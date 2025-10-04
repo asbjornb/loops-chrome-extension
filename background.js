@@ -1,23 +1,11 @@
-// Storage helper functions
-async function getStorageData(key) {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([key], (result) => {
-      resolve(result[key] || []);
-    });
-  });
-}
-
-async function saveToStorage(key, data) {
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ [key]: data }, resolve);
-  });
+async function getActiveTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab || null;
 }
 
 // Save tab to a list
 async function saveTabToList(listName, note = '') {
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  const tab = tabs[0];
-
+  const tab = await getActiveTab();
   if (!tab) return;
 
   const tabData = {
@@ -29,9 +17,10 @@ async function saveTabToList(listName, note = '') {
     note: note,
   };
 
-  const list = await getStorageData(listName);
+  const storage = await chrome.storage.local.get(listName);
+  const list = storage[listName] || [];
   list.unshift(tabData); // Add to beginning of list
-  await saveToStorage(listName, list);
+  await chrome.storage.local.set({ [listName]: list });
 
   // Show save success notification briefly
   chrome.action.setBadgeText({ text: '✓' });
@@ -47,9 +36,7 @@ async function saveTabToList(listName, note = '') {
 
 // Show note dialog in content script
 async function showNoteDialog(listName) {
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-  const tab = tabs[0];
-
+  const tab = await getActiveTab();
   if (!tab) return;
 
   // Inject the content script if needed
