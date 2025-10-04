@@ -10,9 +10,10 @@ function createChromeStub(initialData = {}) {
   return {
     storage: {
       local: {
-        async get(keys) {
+        get(keys, callback) {
           if (!keys) {
-            return { ...localStore };
+            callback({ ...localStore });
+            return;
           }
 
           if (Array.isArray(keys)) {
@@ -20,21 +21,29 @@ function createChromeStub(initialData = {}) {
             keys.forEach((key) => {
               result[key] = localStore[key];
             });
-            return result;
+            callback(result);
+            return;
           }
 
           if (typeof keys === 'string') {
-            return { [keys]: localStore[keys] };
+            callback({ [keys]: localStore[keys] });
+            return;
           }
 
           throw new Error('Unsupported key type for chrome.storage.local.get');
         },
-        async set(values) {
+        set(values, callback) {
           Object.keys(values).forEach((key) => {
             localStore[key] = values[key];
           });
+          if (callback) {
+            callback();
+          }
         },
       },
+    },
+    runtime: {
+      lastError: null,
     },
   };
 }

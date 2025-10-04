@@ -86,14 +86,27 @@
 
     const storage = chrome.storage.local;
 
+    function callStorage(method, payload) {
+      return new Promise((resolve, reject) => {
+        storage[method](payload, (result) => {
+          const error = chrome.runtime?.lastError;
+          if (error) {
+            reject(new Error(error.message));
+            return;
+          }
+          resolve(result);
+        });
+      });
+    }
+
     return {
       async load() {
-        const result = await storage.get(['loopsSettings']);
+        const result = await callStorage('get', ['loopsSettings']);
         return mergeWithDefaults(result?.loopsSettings || {});
       },
       async save(nextSettings) {
         const payload = deepClone(nextSettings);
-        await storage.set({ loopsSettings: payload });
+        await callStorage('set', { loopsSettings: payload });
       },
     };
   }
