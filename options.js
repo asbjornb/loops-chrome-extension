@@ -1,5 +1,32 @@
 // Options page functionality
 let settings = {};
+let githubSyncLoader = null;
+
+async function ensureGitHubSyncLoaded() {
+  if (window.GitHubSync) {
+    return;
+  }
+
+  if (!githubSyncLoader) {
+    githubSyncLoader = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'github-sync.js';
+      script.onload = resolve;
+      script.onerror = () => {
+        githubSyncLoader = null;
+        reject(new Error('Failed to load GitHub sync module'));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  await githubSyncLoader;
+
+  if (!window.GitHubSync) {
+    githubSyncLoader = null;
+    throw new Error('GitHub sync module failed to initialize');
+  }
+}
 
 // Default settings
 const DEFAULT_SETTINGS = {
@@ -91,7 +118,7 @@ function updateUI() {
   document.getElementById('confirmDelete').checked = settings.confirmDelete;
   document.getElementById('autoClose').checked = settings.autoClose;
   document.getElementById('inactiveTabThreshold').value = settings.inactiveTabThreshold;
-  
+
   // UI settings
   document.getElementById('showShortcuts').checked = settings.showShortcuts;
 
@@ -207,15 +234,7 @@ async function connectGitHub() {
     connectBtn.textContent = 'Connecting...';
     connectBtn.disabled = true;
 
-    // Load GitHub sync module if needed
-    if (!window.GitHubSync) {
-      const script = document.createElement('script');
-      script.src = 'github-sync.js';
-      document.head.appendChild(script);
-      await new Promise((resolve) => {
-        script.onload = resolve;
-      });
-    }
+    await ensureGitHubSyncLoaded();
 
     // Test connection
     const githubSync = new window.GitHubSync();
@@ -237,16 +256,19 @@ async function connectGitHub() {
     if (!settings.githubSync.gistId) {
       try {
         // Create a new gist for syncing
-        const syncResult = await githubSync.performSync();
-        
+        await githubSync.performSync();
+
         // Get the gist ID that was created
         const updatedSettings = await chrome.storage.local.get(['loopsSettings']);
         if (updatedSettings.loopsSettings?.githubSync?.gistId) {
           settings.githubSync.gistId = updatedSettings.loopsSettings.githubSync.gistId;
           document.getElementById('githubGistId').value = settings.githubSync.gistId;
         }
-        
-        showStatus(`✅ Connected to GitHub as ${result.user.login} and created sync gist!`, 'success');
+
+        showStatus(
+          `✅ Connected to GitHub as ${result.user.login} and created sync gist!`,
+          'success'
+        );
       } catch (error) {
         console.error('Failed to create gist:', error);
         showStatus(`Connected to GitHub, but failed to create gist: ${error.message}`, 'warning');
@@ -312,15 +334,7 @@ async function testSync() {
     // Test GitHub sync
     if (settings.githubSync.enabled && settings.githubSync.token) {
       try {
-        // Load GitHub sync module if needed
-        if (!window.GitHubSync) {
-          const script = document.createElement('script');
-          script.src = 'github-sync.js';
-          document.head.appendChild(script);
-          await new Promise((resolve) => {
-            script.onload = resolve;
-          });
-        }
+        await ensureGitHubSyncLoaded();
 
         const githubSync = new window.GitHubSync();
         await githubSync.init(settings);
@@ -467,15 +481,7 @@ async function reconnectAndSync() {
     updateSettingsFromUI();
     await saveSettings();
 
-    // Load GitHub sync module if needed
-    if (!window.GitHubSync) {
-      const script = document.createElement('script');
-      script.src = 'github-sync.js';
-      document.head.appendChild(script);
-      await new Promise((resolve) => {
-        script.onload = resolve;
-      });
-    }
+    await ensureGitHubSyncLoaded();
 
     // Initialize GitHub sync and pull data
     const githubSync = new window.GitHubSync();
@@ -691,7 +697,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Navigation tab functionality
 function initNavigationTabs() {
-  document.querySelectorAll('.nav-tab').forEach(tab => {
+  document.querySelectorAll('.nav-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
       const page = tab.dataset.page;
       switch (page) {
