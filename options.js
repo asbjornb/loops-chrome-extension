@@ -1,6 +1,10 @@
 // Options page functionality
-let settings = {};
+const { createSettingsStore, cloneDefaults, mergeWithDefaults, DEFAULT_SETTINGS } =
+  window.loopsSettingsStore;
+
+let settings = cloneDefaults();
 let githubSyncLoader = null;
+const settingsStore = createSettingsStore(chrome);
 
 async function ensureGitHubSyncLoaded() {
   if (window.GitHubSync) {
@@ -28,47 +32,15 @@ async function ensureGitHubSyncLoaded() {
   }
 }
 
-// Default settings
-const DEFAULT_SETTINGS = {
-  // Sync settings
-  chromeSync: {
-    enabled: true,
-    maxItems: 50, // Fixed at 50, no longer user-configurable
-    autoSyncInterval: 300000, // 5 minutes
-  },
-  githubSync: {
-    enabled: false,
-    token: '',
-    gistId: null,
-    isPublic: false,
-    description: 'Loops Browser Extension - Saved Tabs',
-    lastSynced: null,
-  },
-  gdriveSync: {
-    enabled: false,
-    // Future settings
-  },
-
-  // General settings
-  confirmDelete: true,
-  autoClose: true,
-  inactiveTabThreshold: 8, // Hours before considering a tab inactive
-
-  // UI settings
-  theme: 'light', // For future dark mode
-  showShortcuts: true, // Show keyboard shortcuts in popup
-};
-
 // Load settings on page load
 async function loadSettings() {
   try {
-    const stored = await chrome.storage.local.get(['loopsSettings']);
-    settings = { ...DEFAULT_SETTINGS, ...(stored.loopsSettings || {}) };
+    settings = await settingsStore.load();
     updateUI();
     updateSyncStatus();
   } catch (error) {
     console.error('Failed to load settings:', error);
-    settings = DEFAULT_SETTINGS;
+    settings = cloneDefaults();
     updateUI();
   }
 }
@@ -76,7 +48,7 @@ async function loadSettings() {
 // Save settings to storage
 async function saveSettings() {
   try {
-    await chrome.storage.local.set({ loopsSettings: settings });
+    await settingsStore.save(settings);
 
     // Update sync configuration
     if (window.loopsSync) {
@@ -426,14 +398,14 @@ function importSettings() {
       }
 
       // Merge with defaults to ensure all properties exist
-      const newSettings = { ...DEFAULT_SETTINGS, ...importData.settings };
+      const mergedSettings = mergeWithDefaults(importData.settings);
 
-      // Ensure maxItems is always 50 (no longer user-configurable)
-      if (newSettings.chromeSync) {
-        newSettings.chromeSync.maxItems = 50;
+      // Ensure maxItems is always the enforced default
+      if (mergedSettings.chromeSync) {
+        mergedSettings.chromeSync.maxItems = DEFAULT_SETTINGS.chromeSync.maxItems;
       }
 
-      settings = newSettings;
+      settings = mergedSettings;
 
       await saveSettings();
       updateUI();
@@ -519,7 +491,7 @@ async function reconnectAndSync() {
 // Reset to defaults
 async function resetSettings() {
   if (confirm('This will reset all settings to defaults. Are you sure?')) {
-    settings = { ...DEFAULT_SETTINGS };
+    settings = cloneDefaults();
     await saveSettings();
     updateUI();
     updateSyncStatus();
