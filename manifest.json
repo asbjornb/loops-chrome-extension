@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Loops - Close tabs, keep context",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Manage tabs better by saving them to Read Later or Task lists",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyHDVNbg3EQM1eF2rG6pZeLKTgIySa0YGkhHNCPZ0DgR6FMW4bQEiTmg2H+l5NOeV1I91L8JDmQFAh9gOwMnKi6CgnI76kllut9eQyjAYJOrFv1PWt6y5OD8aBrPrGKjEfzZu1cqsspcLtJFUcMGc5DIlmKIVbvsoiu0WQoF9Tpzzpb3hecduIZ+YKfNDLzt4q21RD6lOAFShTLcliOhJGjJABsdZGPRqgn9/zlqQxFZW6vmD1qEVdWQbOoX4lliFVMlTlZFNuipM3hZUA1DSRSsib5pTf1zdUeMtXgqtgkHPQnDox/CElzLQL1rKrS/09jKQDu72FKkH7uzAL6XjVQIDAQAB",
   "permissions": ["tabs", "storage", "activeTab", "scripting"],
