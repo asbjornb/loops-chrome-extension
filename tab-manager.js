@@ -7,6 +7,11 @@ const tabGroupsContainer = document.getElementById('tabGroups');
 const bulkActions = document.getElementById('bulkActions');
 const selectedCount = document.getElementById('selectedCount');
 
+function resetSelectionState() {
+  selectedTabs.clear();
+  updateBulkActions();
+}
+
 // Update threshold display
 async function updateThresholdDisplay() {
   let thresholdHours = 8; // default
@@ -466,7 +471,7 @@ async function saveGroupToList(domain, listName) {
   }
 
   // Clear selections and refresh the page
-  selectedTabs.clear();
+  resetSelectionState();
   loadTabs();
 }
 
@@ -484,7 +489,7 @@ async function closeDuplicatesInGroup(domain) {
     } catch (error) {
       console.warn('Some tabs could not be closed (may already be closed):', error);
     }
-    selectedTabs.clear();
+    resetSelectionState();
     loadTabs();
   }
 }
@@ -523,7 +528,7 @@ document.getElementById('saveAllSuggested').addEventListener('click', async () =
 
   if (savedCount > 0) {
     alert(`Saved ${savedCount} tabs based on suggestions!`);
-    selectedTabs.clear();
+    resetSelectionState();
     loadTabs();
   }
 });
@@ -556,7 +561,7 @@ document.getElementById('closeInactive').addEventListener('click', async () => {
       } catch (error) {
         console.warn('Some tabs could not be closed (may already be closed):', error);
       }
-      selectedTabs.clear();
+      resetSelectionState();
       loadTabs();
     }
   } else {
@@ -577,7 +582,7 @@ document.getElementById('closeDuplicates').addEventListener('click', async () =>
     } catch (error) {
       console.warn('Some tabs could not be closed (may already be closed):', error);
     }
-    selectedTabs.clear();
+    resetSelectionState();
     loadTabs();
   } else if (duplicateTabs.length === 0) {
     alert('No duplicate tabs found!');
@@ -594,8 +599,7 @@ document.getElementById('selectAll').addEventListener('click', () => {
 
 document.getElementById('deselectAll').addEventListener('click', () => {
   document.querySelectorAll('.tab-checkbox, .group-checkbox').forEach((cb) => (cb.checked = false));
-  selectedTabs.clear();
-  updateBulkActions();
+  resetSelectionState();
 });
 
 document.getElementById('refresh').addEventListener('click', loadTabs);
@@ -616,7 +620,7 @@ document.getElementById('bulkClose').addEventListener('click', async () => {
     } catch (error) {
       console.warn('Some tabs could not be closed (may already be closed):', error);
     }
-    selectedTabs.clear();
+    resetSelectionState();
     loadTabs();
   }
 });
@@ -639,7 +643,7 @@ async function bulkSaveSelected(listName) {
   } catch (error) {
     console.warn('Some tabs could not be closed (may already be closed):', error);
   }
-  selectedTabs.clear();
+  resetSelectionState();
   loadTabs();
 }
 
